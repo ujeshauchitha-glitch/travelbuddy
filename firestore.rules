@@ -1,0 +1,161 @@
+rules_version = '2';
+
+// TravelBuddy security rules.
+// Privacy is enforced HERE (server side), never only in the UI.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Verified Google account on the campus domain. Checked on the token, so it
+    // cannot be bypassed from the client.
+    function isCampus() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('.*@vitstudent[.]ac[.]in');
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function profilePath(uid) {
+      return /databases/$(database)/documents/profiles/$(uid);
+    }
+
+    // A connection exists between two users once a host accepted the other
+    // into one of their trips. Document id is "<hostUid>_<memberUid>".
+    function connected(a, b) {
+      return exists(/databases/$(database)/documents/connections/$(a + '_' + b))
+        || exists(/databases/$(database)/documents/connections/$(b + '_' + a));
+    }
+
+    function canSeeField(ownerUid, field) {
+      let vis = get(profilePath(ownerUid)).data.contactVisibility[field];
+      return vis == 'campus'
+        || (vis == 'travelmates' && connected(ownerUid, request.auth.uid));
+    }
+
+    function validVisibility(v) {
+      return v in ['campus', 'travelmates', 'me'];
+    }
+
+    // ---------- profiles ----------
+    match /profiles/{uid} {
+      allow read: if isCampus();
+
+      allow create, update: if isCampus() && isSelf(uid)
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 80
+        && (!('hometown' in request.resource.data) || request.resource.data.hometown.size() <= 80)
+        && (!('bio' in request.resource.data) || request.resource.data.bio.size() <= 280)
+        && validVisibility(request.resource.data.contactVisibility.phone)
+        && validVisibility(request.resource.data.contactVisibility.email)
+        && validVisibility(request.resource.data.contactVisibility.instagram);
+
+      allow delete: if false;
+
+      // Contact details live in separate documents so each one can have its
+      // own visibility: /profiles/{uid}/private/{phone|email|instagram}
+      match /private/{field} {
+        allow read: if isCampus()
+          && (isSelf(uid) || canSeeField(uid, field));
+
+        allow create, update: if isCampus() && isSelf(uid)
+          && request.resource.data.keys().hasOnly(['value'])
+          && request.resource.data.value is string
+          && (
+            (field == 'phone'
+              && request.resource.data.value.matches('^[+]?[0-9 ()-]{7,20}$'))
+            || (field == 'email'
+              && request.resource.data.value == request.auth.token.email)
+            || (field == 'instagram'
+              && request.resource.data.value.matches('^[A-Za-z0-9._]{1,30}$'))
+          );
+
+        allow delete: if isCampus() && isSelf(uid);
+      }
+    }
+
+    // ---------- trips ----------
+    match /trips/{tripId} {
+      allow read: if isCampus();
+
+      allow create: if isCampus()
+        && request.resource.data.hostId == request.auth.uid
+        && request.resource.data.memberIds == [request.auth.uid]
+        && request.resource.data.mode in
+             ['cab', 'train', 'flight', 'bus', 'auto', 'metro', 'ferry', 'bike', 'other']
+        && request.resource.data.origin.name is string
+        && request.resource.data.origin.name.size() > 0
+        && request.resource.data.origin.name.size() <= 120
+        && request.resource.data.destination.name is string
+        && request.resource.data.destination.name.size() > 0
+        && request.resource.data.destination.name.size() <= 120
+        && request.resource.data.departAt is timestamp
+        && request.resource.data.departAt > request.time
+        && request.resource.data.spotsOpen is int
+        && request.resource.data.spotsOpen >= 1
+        && request.resource.data.spotsOpen <= 20;
+
+      // Only the host edits or deletes a trip. The host can never be swapped.
+      allow update: if isCampus()
+        && resource.data.hostId == request.auth.uid
+        && request.resource.data.hostId == request.auth.uid;
+      allow delete: if isCampus() && resource.data.hostId == request.auth.uid;
+
+      match /requests/{uid} {
+        function tripHost() {
+          return get(/databases/$(database)/documents/trips/$(tripId)).data.hostId;
+        }
+
+        // The requester and the trip's host can see a join request.
+        allow read: if isCampus() && (isSelf(uid) || tripHost() == request.auth.uid);
+
+        allow create: if isCampus() && isSelf(uid)
+          && tripHost() != request.auth.uid
+          && request.resource.data.status == 'pending';
+
+        // Host decides.
+        allow update: if isCampus() && tripHost() == request.auth.uid
+          && request.resource.data.status in ['accepted', 'declined'];
+
+        allow delete: if isCampus() && (isSelf(uid) || tripHost() == request.auth.uid);
+      }
+    }
+
+    // ---------- connections ----------
+    match /connections/{connId} {
+      allow read: if isCampus() && request.auth.uid in resource.data.uids;
+
+      // Created by the host when accepting a join request; never editable.
+      allow create: if isCampus()
+        && connId == request.auth.uid + '_' + request.resource.data.memberUid
+        && request.resource.data.uids == [request.auth.uid, request.resource.data.memberUid]
+        && get(/databases/$(database)/documents/trips/$(request.resource.data.tripId)).data.hostId
+             == request.auth.uid
+        && get(/databases/$(database)/documents/trips/$(request.resource.data.tripId)/requests/$(request.resource.data.memberUid)).data.status
+             == 'accepted';
+
+      allow update, delete: if false;
+    }
+
+    // ---------- feedback ----------
+    match /suggestions/{id} {
+      allow create: if isCampus()
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 1000;
+      allow read, update, delete: if false;
+    }
+
+    // Everything else is locked.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
