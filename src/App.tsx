@@ -9,13 +9,16 @@ import PostTrip from './pages/PostTrip'
 import MyTrips from './pages/MyTrips'
 import TripDetail from './pages/TripDetail'
 import Profile from './pages/Profile'
+import Chats from './pages/Chats'
+import Chat from './pages/Chat'
+import Help from './pages/Help'
 
 function Gate() {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, gender, loading } = useAuth()
   if (loading) return <div className="center"><p className="muted">Loading…</p></div>
   if (!user) return <Login />
-  // New users must finish their profile (phone is required) before anything else.
-  if (!profile) {
+  // Phone and gender are required before anything else, so safety filters work.
+  if (!profile || !gender) {
     return (
       <Routes>
         <Route element={<Layout />}>
@@ -31,6 +34,9 @@ function Gate() {
         <Route path="post" element={<PostTrip />} />
         <Route path="mine" element={<MyTrips />} />
         <Route path="trip/:id" element={<TripDetail />} />
+        <Route path="chats" element={<Chats />} />
+        <Route path="chat/:cid" element={<Chat />} />
+        <Route path="help" element={<Help />} />
         <Route path="profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

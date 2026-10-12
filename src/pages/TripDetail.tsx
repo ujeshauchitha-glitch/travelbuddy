@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   arrayUnion, collection, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc, writeBatch,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
-import { modeInfo } from '../lib/modes'
+import { audienceBadge, canJoinAudience, convId, modeInfo } from '../lib/modes'
 import type { ContactField, JoinRequest, Trip } from '../lib/types'
 import { fmtWhen } from '../components/TripCard'
 
-// Reads one contact field. The server decides whether we are allowed.
+// Reads one field. The server decides whether we are allowed.
 function ContactRow({ uid, field, label }: { uid: string; field: ContactField; label: string }) {
   const [value, setValue] = useState<string | null | undefined>(undefined)
   useEffect(() => {
@@ -20,14 +20,15 @@ function ContactRow({ uid, field, label }: { uid: string; field: ContactField; l
   if (value === undefined) return <li>{label}: …</li>
   if (value === null) return <li className="muted">{label}: hidden or not shared</li>
   const href = field === 'instagram' ? `https://instagram.com/${value}`
-    : field === 'email' ? `mailto:${value}` : `tel:${value.replace(/\s/g, '')}`
-  return <li>{label}: <a href={href} target="_blank" rel="noreferrer">{field === 'instagram' ? '@' + value : value}</a></li>
+    : field === 'email' ? `mailto:${value}` : field === 'phone' ? `tel:${value.replace(/\s/g, '')}` : undefined
+  const text = field === 'instagram' ? '@' + value : value
+  return <li>{label}: {href ? <a href={href} target="_blank" rel="noreferrer">{text}</a> : text}</li>
 }
 
 function Contacts({ uid, name }: { uid: string; name: string }) {
   return (
     <div className="card">
-      <strong>{name}'s contact</strong>
+      <strong>{name}'s details</strong>
       <ul className="plain">
         <ContactRow uid={uid} field="phone" label="Phone" />
         <ContactRow uid={uid} field="email" label="Email" />
@@ -39,7 +40,7 @@ function Contacts({ uid, name }: { uid: string; name: string }) {
 
 export default function TripDetail() {
   const { id } = useParams()
-  const { user, profile } = useAuth()
+  const { user, profile, gender } = useAuth()
   const nav = useNavigate()
   const [trip, setTrip] = useState<Trip | null | undefined>(undefined)
   const [requests, setRequests] = useState<JoinRequest[]>([])
@@ -71,6 +72,8 @@ export default function TripDetail() {
   const label = trip.mode === 'other' && trip.modeLabel ? trip.modeLabel : m.label
   const spotsLeft = Math.max(0, trip.spotsOpen - (trip.memberIds.length - 1))
   const isMember = trip.memberIds.includes(user!.uid)
+  const eligible = canJoinAudience(trip.audience, gender)
+  const badge = audienceBadge(trip.audience)
 
   const run = async (fn: () => Promise<void>) => {
     setError('')
@@ -104,10 +107,15 @@ export default function TripDetail() {
     nav('/')
   })
 
+  const chatLink = (otherUid: string) => `/chat/${convId(user!.uid, otherUid)}?trip=${trip.id}`
+
   return (
     <>
       <div className="card">
-        <span className="chip">{m.icon} {label}{trip.number ? ` · ${trip.number}` : ''}</span>
+        <div className="row">
+          <span className="chip">{m.icon} {label}{trip.number ? ` · ${trip.number}` : ''}</span>
+          {badge && <span className="chip safe">{badge}</span>}
+        </div>
         <h2>{trip.origin.name} → {trip.destination.name}</h2>
         <p>{fmtWhen(trip)}</p>
         <ul className="plain">
@@ -119,6 +127,7 @@ export default function TripDetail() {
         </ul>
         {trip.notes && <p className="muted">{trip.notes}</p>}
         <p className="muted small">Hosted by {trip.hostName}</p>
+        {!isHost && <Link className="small" to={`/help?category=safety&trip=${trip.id}`}>Report this trip</Link>}
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
@@ -133,12 +142,15 @@ export default function TripDetail() {
                 <strong>{r.displayName}</strong>
                 <span className="chip">{r.status}</span>
               </div>
-              {r.status === 'pending' && (
-                <div className="row">
-                  <button className="btn primary" disabled={spotsLeft === 0} onClick={() => decide(r, 'accepted')}>Accept</button>
-                  <button className="btn" onClick={() => decide(r, 'declined')}>Decline</button>
-                </div>
-              )}
+              <div className="row">
+                {r.status === 'pending' && (
+                  <>
+                    <button className="btn primary" disabled={spotsLeft === 0} onClick={() => decide(r, 'accepted')}>Accept</button>
+                    <button className="btn" onClick={() => decide(r, 'declined')}>Decline</button>
+                  </>
+                )}
+                <Link className="btn" to={chatLink(r.uid)}>Message</Link>
+              </div>
               {r.status === 'accepted' && <Contacts uid={r.uid} name={r.displayName} />}
             </div>
           ))}
@@ -147,16 +159,27 @@ export default function TripDetail() {
       ) : isMember ? (
         <>
           <p className="ok">You are in this trip.</p>
+          <Link className="btn primary" to={chatLink(trip.hostId)}>Message {trip.hostName}</Link>
           <Contacts uid={trip.hostId} name={trip.hostName} />
         </>
-      ) : mine?.status === 'pending' ? (
-        <div className="row"><span className="chip">Request sent</span><button className="btn" onClick={cancelRequest}>Cancel</button></div>
-      ) : mine?.status === 'declined' ? (
-        <p className="muted">The host could not fit you in this time.</p>
       ) : (
-        <button className="btn primary" disabled={spotsLeft === 0} onClick={requestJoin}>
-          {spotsLeft === 0 ? 'Trip is full' : 'Request to join'}
-        </button>
+        <>
+          {!eligible ? (
+            <p className="notice">
+              This trip is {trip.audience === 'women_only' ? 'for women only' : 'for men only'}, based on the gender
+              in your profile. {gender ? '' : 'Add your gender in your profile to see which trips you can join.'}
+            </p>
+          ) : mine?.status === 'pending' ? (
+            <div className="row"><span className="chip">Request sent</span><button className="btn" onClick={cancelRequest}>Cancel</button></div>
+          ) : mine?.status === 'declined' ? (
+            <p className="muted">The host could not fit you in this time.</p>
+          ) : (
+            <button className="btn primary" disabled={spotsLeft === 0} onClick={requestJoin}>
+              {spotsLeft === 0 ? 'Trip is full' : 'Request to join'}
+            </button>
+          )}
+          {eligible && <Link className="btn" to={chatLink(trip.hostId)}>Ask {trip.hostName} a question</Link>}
+        </>
       )}
     </>
   )

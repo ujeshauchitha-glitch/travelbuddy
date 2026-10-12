@@ -2,11 +2,12 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db, googleProvider, isCampusEmail } from '../lib/firebase'
-import type { Profile } from '../lib/types'
+import type { Gender, Profile } from '../lib/types'
 
 interface AuthState {
   user: User | null
   profile: Profile | null
+  gender: Gender | null // own gender; null until set
   loading: boolean
   error: string | null
   signIn: () => Promise<void>
@@ -15,6 +16,7 @@ interface AuthState {
 }
 
 const Ctx = createContext<AuthState | null>(null)
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const v = useContext(Ctx)
   if (!v) throw new Error('useAuth outside AuthProvider')
@@ -24,13 +26,22 @@ export const useAuth = () => {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [gender, setGender] = useState<Gender | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const loadProfile = useCallback(async (u: User | null) => {
-    if (!u) return setProfile(null)
-    const snap = await getDoc(doc(db, 'profiles', u.uid))
-    setProfile(snap.exists() ? (snap.data() as Profile) : null)
+    if (!u) {
+      setProfile(null)
+      setGender(null)
+      return
+    }
+    const [p, g] = await Promise.all([
+      getDoc(doc(db, 'profiles', u.uid)),
+      getDoc(doc(db, 'profiles', u.uid, 'private', 'gender')).catch(() => null),
+    ])
+    setProfile(p.exists() ? (p.data() as Profile) : null)
+    setGender(g && g.exists() ? (g.data().value as Gender) : null)
   }, [])
 
   useEffect(() => {
@@ -69,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthState = {
     user,
     profile,
+    gender,
     loading,
     error,
     signIn,

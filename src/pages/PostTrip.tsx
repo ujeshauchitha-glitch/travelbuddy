@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
-import { MODES, modeInfo } from '../lib/modes'
+import { AUDIENCES, MODES, modeInfo } from '../lib/modes'
 import { samePlace } from '../lib/places'
-import type { Place, TravelMode } from '../lib/types'
+import type { Audience, Place, TravelMode } from '../lib/types'
 import PlaceInput from '../components/PlaceInput'
 
 const localNow = () => {
@@ -15,7 +15,7 @@ const localNow = () => {
 }
 
 export default function PostTrip() {
-  const { user, profile } = useAuth()
+  const { user, profile, gender } = useAuth()
   const nav = useNavigate()
   const [mode, setMode] = useState<TravelMode>('cab')
   const [modeLabel, setModeLabel] = useState('')
@@ -29,6 +29,8 @@ export default function PostTrip() {
   const [costNote, setCostNote] = useState('')
   const [notes, setNotes] = useState('')
   const [luggage, setLuggage] = useState(true)
+  const allowed = (a: Audience) => a === 'anyone' || (a === 'women_only' && gender === 'woman') || (a === 'men_only' && gender === 'man')
+  const [audience, setAudience] = useState<Audience>(profile?.travelPref && allowed(profile.travelPref) ? profile.travelPref : 'anyone')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const info = modeInfo(mode)
@@ -60,6 +62,7 @@ export default function PostTrip() {
         costNote: clean(costNote),
         notes: clean(notes),
         luggageFriendly: luggage,
+        audience,
         memberIds: [user!.uid],
         createdAt: serverTimestamp(),
       }).filter(([, v]) => v !== undefined))
@@ -110,6 +113,12 @@ export default function PostTrip() {
       </div>
       <label className="field"><span>Notes</span>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={400} rows={3} /></label>
+      <label className="field"><span>Who can join *</span>
+        <select value={audience} onChange={(e) => setAudience(e.target.value as Audience)}>
+          {AUDIENCES.map((a) => <option key={a.id} value={a.id} disabled={!allowed(a.id)}>{a.label}</option>)}
+        </select>
+        <small className="muted">Women-only and men-only trips are enforced by the server: nobody else can send a join request.</small>
+      </label>
       <label className="check"><input type="checkbox" checked={luggage} onChange={(e) => setLuggage(e.target.checked)} /> Space for luggage</label>
       {error && <p className="error" role="alert">{error}</p>}
       <button className="btn primary" disabled={busy}>{busy ? 'Posting…' : 'Post trip'}</button>

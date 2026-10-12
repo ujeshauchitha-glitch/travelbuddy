@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // TravelBuddy security rules.
-// Privacy is enforced HERE (server side), never only in the UI.
+// Privacy and safety are enforced HERE (server side), never only in the UI.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -43,6 +43,23 @@ service cloud.firestore {
       return v in ['campus', 'travelmates', 'me'];
     }
 
+    // Self-declared gender, used to enforce women-only / men-only trips.
+    // get() on a missing document fails, which safely denies the request.
+    function genderOf(uid) {
+      return get(/databases/$(database)/documents/profiles/$(uid)/private/gender).data.value;
+    }
+
+    function audienceOk(trip, uid) {
+      let aud = trip.get('audience', 'anyone');
+      return aud == 'anyone'
+        || (aud == 'women_only' && genderOf(uid) == 'woman')
+        || (aud == 'men_only' && genderOf(uid) == 'man');
+    }
+
+    function isBlocked(by, who) {
+      return exists(/databases/$(database)/documents/profiles/$(by)/blocked/$(who));
+    }
+
     // ---------- profiles ----------
     match /profiles/{uid} {
       allow read: if isCampus();
@@ -53,14 +70,17 @@ service cloud.firestore {
         && request.resource.data.displayName.size() <= 80
         && (!('hometown' in request.resource.data) || request.resource.data.hometown.size() <= 80)
         && (!('bio' in request.resource.data) || request.resource.data.bio.size() <= 280)
+        && (!('travelPref' in request.resource.data)
+            || request.resource.data.travelPref in ['anyone', 'women_only', 'men_only'])
         && validVisibility(request.resource.data.contactVisibility.phone)
         && validVisibility(request.resource.data.contactVisibility.email)
-        && validVisibility(request.resource.data.contactVisibility.instagram);
+        && validVisibility(request.resource.data.contactVisibility.instagram)
+        && validVisibility(request.resource.data.contactVisibility.gender);
 
       allow delete: if false;
 
-      // Contact details live in separate documents so each one can have its
-      // own visibility: /profiles/{uid}/private/{phone|email|instagram}
+      // Contact details and gender live in separate documents so each one can
+      // have its own visibility: /profiles/{uid}/private/{field}
       match /private/{field} {
         allow read: if isCampus()
           && (isSelf(uid) || canSeeField(uid, field));
@@ -75,9 +95,18 @@ service cloud.firestore {
               && request.resource.data.value == request.auth.token.email)
             || (field == 'instagram'
               && request.resource.data.value.matches('^[A-Za-z0-9._]{1,30}$'))
+            || (field == 'gender'
+              && request.resource.data.value in ['woman', 'man', 'nonbinary', 'prefer_not'])
           );
 
         allow delete: if isCampus() && isSelf(uid);
+      }
+
+      // People this user has blocked. Only the owner manages the list; the
+      // chat rules look it up to stop blocked people from messaging.
+      match /blocked/{other} {
+        allow read, create, delete: if isCampus() && isSelf(uid);
+        allow update: if false;
       }
     }
 
@@ -100,31 +129,37 @@ service cloud.firestore {
         && request.resource.data.departAt > request.time
         && request.resource.data.spotsOpen is int
         && request.resource.data.spotsOpen >= 1
-        && request.resource.data.spotsOpen <= 20;
+        && request.resource.data.spotsOpen <= 20
+        && request.resource.data.audience in ['anyone', 'women_only', 'men_only']
+        // A women-only trip can only be hosted by a woman, men-only by a man.
+        && audienceOk(request.resource.data, request.auth.uid);
 
-      // Only the host edits or deletes a trip. The host can never be swapped.
+      // Only the host edits or deletes a trip. The host can never be swapped
+      // and the audience can never be changed after people have requested.
       allow update: if isCampus()
         && resource.data.hostId == request.auth.uid
-        && request.resource.data.hostId == request.auth.uid;
+        && request.resource.data.hostId == request.auth.uid
+        && request.resource.data.get('audience', 'anyone') == resource.data.get('audience', 'anyone');
       allow delete: if isCampus() && resource.data.hostId == request.auth.uid;
 
       match /requests/{uid} {
-        function tripHost() {
-          return get(/databases/$(database)/documents/trips/$(tripId)).data.hostId;
+        function tripData() {
+          return get(/databases/$(database)/documents/trips/$(tripId)).data;
         }
 
         // The requester and the trip's host can see a join request.
-        allow read: if isCampus() && (isSelf(uid) || tripHost() == request.auth.uid);
+        allow read: if isCampus() && (isSelf(uid) || tripData().hostId == request.auth.uid);
 
         allow create: if isCampus() && isSelf(uid)
-          && tripHost() != request.auth.uid
-          && request.resource.data.status == 'pending';
+          && tripData().hostId != request.auth.uid
+          && request.resource.data.status == 'pending'
+          && audienceOk(tripData(), request.auth.uid);
 
         // Host decides.
-        allow update: if isCampus() && tripHost() == request.auth.uid
+        allow update: if isCampus() && tripData().hostId == request.auth.uid
           && request.resource.data.status in ['accepted', 'declined'];
 
-        allow delete: if isCampus() && (isSelf(uid) || tripHost() == request.auth.uid);
+        allow delete: if isCampus() && (isSelf(uid) || tripData().hostId == request.auth.uid);
       }
     }
 
@@ -144,13 +179,69 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // ---------- feedback ----------
-    match /suggestions/{id} {
+    // ---------- private chat ----------
+    // Conversation id is the two uids sorted and joined with '_'.
+    match /conversations/{cid} {
+      function otherUid(uids) {
+        return uids[0] == request.auth.uid ? uids[1] : uids[0];
+      }
+
+      allow read: if isCampus()
+        && (resource == null || request.auth.uid in resource.data.uids);
+
+      // A chat starts from a trip: one of the two people must be that trip's
+      // host. This stops random cold messages to strangers.
+      allow create: if isCampus()
+        && request.resource.data.uids.size() == 2
+        && request.auth.uid in request.resource.data.uids
+        && request.resource.data.uids[0] != request.resource.data.uids[1]
+        && cid == (request.resource.data.uids[0] < request.resource.data.uids[1]
+             ? request.resource.data.uids[0] + '_' + request.resource.data.uids[1]
+             : request.resource.data.uids[1] + '_' + request.resource.data.uids[0])
+        && get(/databases/$(database)/documents/trips/$(request.resource.data.tripId)).data.hostId
+             in request.resource.data.uids
+        && !isBlocked(otherUid(request.resource.data.uids), request.auth.uid);
+
+      // Only the preview fields may change after creation.
+      allow update: if isCampus()
+        && request.auth.uid in resource.data.uids
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'lastAt'])
+        && !isBlocked(otherUid(resource.data.uids), request.auth.uid);
+
+      allow delete: if false;
+
+      match /messages/{mid} {
+        allow read: if isCampus()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(cid)).data.uids;
+
+        // getAfter so the first message can be written in the same batch as
+        // the conversation document.
+        allow create: if isCampus()
+          && request.auth.uid in getAfter(/databases/$(database)/documents/conversations/$(cid)).data.uids
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && !isBlocked(otherUid(getAfter(/databases/$(database)/documents/conversations/$(cid)).data.uids),
+                        request.auth.uid);
+
+        allow update, delete: if false;
+      }
+    }
+
+    // ---------- issues, safety reports and feedback ----------
+    // Users can file reports and read back only their own. Triage happens in
+    // the Firebase console, so no in-app admin account exists to be abused.
+    match /issues/{id} {
       allow create: if isCampus()
         && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.category in ['bug', 'safety', 'account', 'feedback']
         && request.resource.data.text is string
-        && request.resource.data.text.size() <= 1000;
-      allow read, update, delete: if false;
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.status == 'open';
+      allow read: if isCampus() && resource.data.authorId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // Everything else is locked.

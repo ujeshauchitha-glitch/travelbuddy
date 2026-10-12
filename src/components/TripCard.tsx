@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { modeInfo } from '../lib/modes'
+import { audienceBadge, modeInfo } from '../lib/modes'
 import type { Trip } from '../lib/types'
 
 export const fmtWhen = (t: Trip) =>
@@ -13,6 +13,7 @@ export default function TripCard({ trip }: { trip: Trip }) {
     <Link to={`/trip/${trip.id}`} className="card trip">
       <div className="row between">
         <span className="chip">{m.icon} {label}{trip.number ? ` · ${trip.number}` : ''}</span>
+        {audienceBadge(trip.audience) && <span className="chip safe">{audienceBadge(trip.audience)}</span>}
         <span className={left ? 'chip ok' : 'chip'}>{left ? `${left} spot${left > 1 ? 's' : ''} open` : 'Full'}</span>
       </div>
       <div className="route">

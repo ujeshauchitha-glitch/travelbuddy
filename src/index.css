@@ -91,3 +91,15 @@ input:focus, textarea:focus, select:focus, .btn:focus-visible, .chip:focus-visib
 .suggest button:hover { background: var(--bg); }
 
 @media (max-width: 420px) { .grid2 { grid-template-columns: 1fr; } }
+
+.chip.safe { color: #b0287a; border-color: #b0287a; font-weight: 600; }
+.sos { border-color: var(--danger); }
+.tips { padding-left: 20px; margin: 8px 0; }
+.faq summary { cursor: pointer; font-weight: 600; }
+.faq p { margin: 8px 0 0; color: var(--muted); }
+.chat { display: flex; flex-direction: column; min-height: calc(100dvh - var(--nav-h) - 110px); }
+.bubbles { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 8px 0; overflow-y: auto; }
+.bubble { max-width: 80%; padding: 8px 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); align-self: flex-start; overflow-wrap: anywhere; }
+.bubble.mine { align-self: flex-end; background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.composer { display: flex; gap: 8px; position: sticky; bottom: calc(var(--nav-h) + 8px); background: var(--bg); padding: 8px 0; }
+.composer input { flex: 1; }

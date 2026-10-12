@@ -7,13 +7,29 @@
         { "fieldPath": "mode", "order": "ASCENDING" },
         { "fieldPath": "departAt", "order": "ASCENDING" }
       ]
-    }
-    ,{
+    },
+    {
       "collectionGroup": "trips",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "memberIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "departAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "conversations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uids", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "lastAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "issues",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "authorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     }
   ],

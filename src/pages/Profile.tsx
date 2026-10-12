@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { deleteDoc, doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
-import { DEFAULT_VISIBILITY, VISIBILITY_OPTIONS } from '../lib/modes'
-import type { ContactField, Visibility } from '../lib/types'
+import { AUDIENCES, DEFAULT_VISIBILITY, GENDERS, VISIBILITY_OPTIONS } from '../lib/modes'
+import type { Audience, ContactField, Gender, Visibility } from '../lib/types'
 
 const PHONE_RE = /^[+]?[0-9 ()-]{7,20}$/
 const IG_RE = /^[A-Za-z0-9._]{1,30}$/
 
 export default function Profile() {
-  const { user, profile, refreshProfile, logOut } = useAuth()
+  const { user, profile, gender: savedGender, refreshProfile, logOut } = useAuth()
   const nav = useNavigate()
   const firstTime = !profile
   const [name, setName] = useState(profile?.displayName ?? user?.displayName ?? '')
@@ -18,10 +18,17 @@ export default function Profile() {
   const [bio, setBio] = useState(profile?.bio ?? '')
   const [phone, setPhone] = useState('')
   const [instagram, setInstagram] = useState('')
-  const [vis, setVis] = useState<Record<ContactField, Visibility>>(profile?.contactVisibility ?? DEFAULT_VISIBILITY)
+  const [gender, setGender] = useState<Gender | ''>(savedGender ?? '')
+  const [pref, setPref] = useState<Audience>(profile?.travelPref ?? 'anyone')
+  const [vis, setVis] = useState<Record<ContactField, Visibility>>({
+    ...DEFAULT_VISIBILITY,
+    ...(profile?.contactVisibility ?? {}),
+  })
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
+
+  useEffect(() => { setGender(savedGender ?? '') }, [savedGender])
 
   // Load my own saved contact values (rules always allow the owner).
   useEffect(() => {
@@ -42,6 +49,10 @@ export default function Profile() {
     if (!name.trim()) return setError('Name is required.')
     if (!PHONE_RE.test(ph)) return setError('Enter a valid phone number (7–20 digits, + ( ) - allowed).')
     if (ig && !IG_RE.test(ig)) return setError('Instagram ID can only use letters, numbers, . and _ (max 30).')
+    if (!gender) return setError('Please choose a gender option (you can pick "Prefer not to say").')
+    // A saved preference the person cannot actually use would block their own trips.
+    const safePref: Audience =
+      (pref === 'women_only' && gender !== 'woman') || (pref === 'men_only' && gender !== 'man') ? 'anyone' : pref
     setBusy(true)
     try {
       const b = writeBatch(db)
@@ -52,10 +63,12 @@ export default function Profile() {
         hometown: hometown.trim(),
         bio: bio.trim(),
         contactVisibility: vis,
+        travelPref: safePref,
         createdAt: profile?.createdAt ?? serverTimestamp(),
       })
       b.set(doc(db, 'profiles', uid, 'private', 'phone'), { value: ph })
       b.set(doc(db, 'profiles', uid, 'private', 'email'), { value: user!.email })
+      b.set(doc(db, 'profiles', uid, 'private', 'gender'), { value: gender })
       if (ig) b.set(doc(db, 'profiles', uid, 'private', 'instagram'), { value: ig })
       await b.commit()
       if (!ig) await deleteDoc(doc(db, 'profiles', uid, 'private', 'instagram'))
@@ -68,8 +81,8 @@ export default function Profile() {
     setBusy(false)
   }
 
-  const visSelect = (f: ContactField) => (
-    <select value={vis[f]} onChange={(e) => setVis({ ...vis, [f]: e.target.value as Visibility })} aria-label={`Who can see your ${f}`}>
+  const visSelect = (f: ContactField, what: string) => (
+    <select value={vis[f]} onChange={(e) => setVis({ ...vis, [f]: e.target.value as Visibility })} aria-label={`Who can see your ${what}`}>
       {VISIBILITY_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
     </select>
   )
@@ -92,18 +105,43 @@ export default function Profile() {
       <div className="contact">
         <label className="field"><span>Phone / WhatsApp *</span>
           <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="+91 98765 43210" /></label>
-        {visSelect('phone')}
+        {visSelect('phone', 'phone number')}
       </div>
       <div className="contact">
         <label className="field"><span>Email</span>
           <input value={user?.email ?? ''} readOnly /></label>
-        {visSelect('email')}
+        {visSelect('email', 'email')}
       </div>
       <div className="contact">
         <label className="field"><span>Instagram (optional)</span>
           <input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="username, without @" /></label>
-        {visSelect('instagram')}
+        {visSelect('instagram', 'Instagram')}
       </div>
+
+      <h3>Safety &amp; travel preferences</h3>
+      <p className="muted small">
+        Gender is used for women-only and men-only trips. It is self-declared and is never shown
+        to anyone unless you allow it below. Trips with a restriction are enforced by the server.
+      </p>
+      <div className="contact">
+        <label className="field"><span>Gender *</span>
+          <select value={gender} onChange={(e) => setGender(e.target.value as Gender)} required>
+            <option value="" disabled>Select…</option>
+            {GENDERS.map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}
+          </select></label>
+        {visSelect('gender', 'gender')}
+      </div>
+      <label className="field"><span>I prefer to travel with</span>
+        <select value={pref} onChange={(e) => setPref(e.target.value as Audience)}>
+          {AUDIENCES.map((a) => (
+            <option key={a.id} value={a.id}
+              disabled={(a.id === 'women_only' && gender !== 'woman') || (a.id === 'men_only' && gender !== 'man')}>
+              {a.label}
+            </option>
+          ))}
+        </select>
+        <small className="muted">This is the default when you post a trip. You can change it for each trip.</small>
+      </label>
 
       {error && <p className="error" role="alert">{error}</p>}
       {msg && <p className="ok" role="status">{msg}</p>}

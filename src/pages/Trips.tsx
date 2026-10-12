@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { collection, limit, onSnapshot, orderBy, query, Timestamp, where } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { MODES } from '../lib/modes'
+import { MODES, canJoinAudience } from '../lib/modes'
+import { useAuth } from '../auth/AuthContext'
 import type { Trip, TravelMode } from '../lib/types'
 import TripCard from '../components/TripCard'
 
 export default function Trips() {
+  const { gender } = useAuth()
+  const [eligibleOnly, setEligibleOnly] = useState(true)
   const [trips, setTrips] = useState<Trip[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -31,11 +34,11 @@ export default function Trips() {
 
   const shown = useMemo(() => {
     const t = text.trim().toLowerCase()
-    if (!t) return trips
     return trips.filter((x) =>
-      [x.origin.name, x.destination.name, x.number, x.carrier, x.hostName]
-        .some((s) => s?.toLowerCase().includes(t)))
-  }, [trips, text])
+      (!eligibleOnly || canJoinAudience(x.audience, gender)) &&
+      (!t || [x.origin.name, x.destination.name, x.number, x.carrier, x.hostName]
+        .some((s) => s?.toLowerCase().includes(t))))
+  }, [trips, text, eligibleOnly, gender])
 
   return (
     <>
@@ -50,6 +53,7 @@ export default function Trips() {
           </button>
         ))}
       </div>
+      <label className="check small"><input type="checkbox" checked={eligibleOnly} onChange={(e) => setEligibleOnly(e.target.checked)} /> Only show trips I can join</label>
       {error && <p className="error">{error}</p>}
       {loading ? <p className="muted">Loading…</p> : shown.length === 0 ? (
         <div className="empty card">
