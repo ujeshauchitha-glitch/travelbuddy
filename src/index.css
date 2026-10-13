@@ -675,3 +675,27 @@ html[data-doodles='off'] .doodle { display: none; }
 }
 
 .d-spark { top: 4px; right: 200px; }
+
+/* =====================================================================
+   DEPTH PASS: shadows that read on both papers, and buttons with a bevelled
+   lower edge so they look pressable. (No gradients: the bevel is an inset line.)
+   ===================================================================== */
+:root { --so: 0.85; --shadow-c: color-mix(in srgb, var(--edge) 62%, var(--bg)); --bevel: color-mix(in srgb, #000 15%, transparent); }
+/* On dark paper a faded shadow vanishes, so use the full, darker-than-paper shadow colour. */
+:root[data-theme='dark'] { --shadow-c: var(--edge); --bevel: color-mix(in srgb, #000 40%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --shadow-c: var(--edge); --bevel: color-mix(in srgb, #000 40%, transparent); } }
+
+.btn { box-shadow: calc(3px * var(--so)) calc(3px * var(--so)) 0 var(--shadow-c), inset 0 -3px 0 var(--bevel); }
+.btn:hover { box-shadow: calc(4px * var(--so)) calc(4px * var(--so)) 0 var(--shadow-c), inset 0 -3px 0 var(--bevel); }
+.btn:active { box-shadow: calc(1px * var(--so)) calc(1px * var(--so)) 0 var(--shadow-c), inset 0 2px 0 var(--bevel); }
+.btn.sm { box-shadow: calc(2px * var(--so)) calc(2px * var(--so)) 0 var(--shadow-c), inset 0 -2px 0 var(--bevel); }
+.btn.danger { box-shadow: calc(3px * var(--so)) calc(3px * var(--so)) 0 var(--danger), inset 0 -3px 0 var(--bevel); }
+.btn:disabled, .btn:disabled:hover, .btn:disabled:active { box-shadow: none; }
+.pass { box-shadow: calc(4px * var(--so)) calc(4px * var(--so)) 0 var(--shadow-c), inset 0 -4px 0 var(--bevel); }
+
+/* buttons that sit on a coloured panel keep a fixed, readable colour in both themes */
+.cta-inner .btn { background: #FFF9F0; color: #242126; border-color: #242126; }
+.cta-inner .btn:hover { background: #FFFFFF; }
+
+/* the round stamp uses the readable accent on both papers */
+.stamp { color: var(--accent); border-color: var(--accent); }
