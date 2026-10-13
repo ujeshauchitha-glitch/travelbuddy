@@ -27,42 +27,42 @@
    Light and their system prefers dark. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #121016;
-    --surface: #1b1820;
-    --tint: #1a1726;
-    --text: #f4f1f8;
-    --muted: #a49fb0;
-    --border: #2b2733;
-    --ink: #f4f1f8;
-    --ink-text: #121016;
-    --soft: #25212d;
-    --accent: #ab9cff;
-    --ok: #4cc38a;
-    --danger: #ff7a98;
-    --safe: #ff8ac4;
-    --h1: #3a2145;
-    --h2: #44272c;
-    --h3: #2c2459;
+    --bg: #161616;
+    --surface: #1d1d1d;
+    --tint: #1a1c1c;
+    --text: #ededed;
+    --muted: #9b9b9b;
+    --border: #333333;
+    --ink: #dedede;
+    --ink-text: #161616;
+    --soft: #262626;
+    --accent: #3ec8d1;
+    --ok: #52c9a0;
+    --danger: #ff7a8a;
+    --safe: #f58ac0;
+    --h1: #0c3a40;
+    --h2: #1f2527;
+    --h3: #0a2b2f;
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --bg: #121016;
-  --surface: #1b1820;
-  --tint: #1a1726;
-  --text: #f4f1f8;
-  --muted: #a49fb0;
-  --border: #2b2733;
-  --ink: #f4f1f8;
-  --ink-text: #121016;
-  --soft: #25212d;
-  --accent: #ab9cff;
-  --ok: #4cc38a;
-  --danger: #ff7a98;
-  --safe: #ff8ac4;
-  --h1: #3a2145;
-  --h2: #44272c;
-  --h3: #2c2459;
+  --bg: #161616;
+  --surface: #1d1d1d;
+  --tint: #1a1c1c;
+  --text: #ededed;
+  --muted: #9b9b9b;
+  --border: #333333;
+  --ink: #dedede;
+  --ink-text: #161616;
+  --soft: #262626;
+  --accent: #3ec8d1;
+  --ok: #52c9a0;
+  --danger: #ff7a8a;
+  --safe: #f58ac0;
+  --h1: #0c3a40;
+  --h2: #1f2527;
+  --h3: #0a2b2f;
   color-scheme: dark;
 }
 :root[data-theme='light'] { color-scheme: light; }
@@ -313,3 +313,11 @@ a.card:hover { transform: translateY(-3px); }
 .theme-btn:active svg { transform: rotate(40deg) scale(0.9); }
 .site-nav .theme-btn { margin-left: 4px; }
 .site-nav-actions { display: flex; align-items: center; gap: 8px; }
+
+/* Dark: flat neutral panels, no coloured glow under cards. */
+:root[data-theme='dark'] .ex-card { box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); }
+:root[data-theme='dark'] .btn:hover, :root[data-theme='dark'] a.card:hover { border-color: #5a5a5a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .ex-card { box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); }
+  :root:not([data-theme='light']) .btn:hover, :root:not([data-theme='light']) a.card:hover { border-color: #5a5a5a; }
+}
