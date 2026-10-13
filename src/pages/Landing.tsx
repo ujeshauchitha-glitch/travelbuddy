@@ -5,6 +5,7 @@ import { CAMPUS_DOMAIN } from '../lib/firebase'
 import { MODES } from '../lib/modes'
 import { Reveal, WordReveal, useScrollProgress, useScrollVars } from '../lib/motion'
 import ModeIcon from '../components/ModeIcon'
+import ThemeToggle from '../components/ThemeToggle'
 
 const STEPS = [
   { title: 'Post or find a trip',
@@ -74,7 +75,10 @@ export default function Landing() {
             <a href="#safety">Safety</a>
             <a href="#faq">FAQ</a>
           </nav>
-          <button className="btn primary sm" onClick={signIn}>Sign in</button>
+          <div className="site-nav-actions">
+            <ThemeToggle />
+            <button className="btn primary sm" onClick={signIn}>Sign in</button>
+          </div>
         </header>
       </div>
 

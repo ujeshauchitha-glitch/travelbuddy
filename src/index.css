@@ -23,8 +23,10 @@
   --head: 'Bricolage Grotesque Variable', 'Inter Variable', system-ui, sans-serif;
   --body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
+/* Dark tokens apply when the user picked Dark, or when they have not picked
+   Light and their system prefers dark. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg: #121016;
     --surface: #1b1820;
     --tint: #1a1726;
@@ -41,11 +43,32 @@
     --h1: #3a2145;
     --h2: #44272c;
     --h3: #2c2459;
+    color-scheme: dark;
   }
 }
+:root[data-theme='dark'] {
+  --bg: #121016;
+  --surface: #1b1820;
+  --tint: #1a1726;
+  --text: #f4f1f8;
+  --muted: #a49fb0;
+  --border: #2b2733;
+  --ink: #f4f1f8;
+  --ink-text: #121016;
+  --soft: #25212d;
+  --accent: #ab9cff;
+  --ok: #4cc38a;
+  --danger: #ff7a98;
+  --safe: #ff8ac4;
+  --h1: #3a2145;
+  --h2: #44272c;
+  --h3: #2c2459;
+  color-scheme: dark;
+}
+:root[data-theme='light'] { color-scheme: light; }
 
 * { box-sizing: border-box; }
-html { background: var(--bg); scroll-behavior: smooth; }
+html { background: var(--bg); scroll-behavior: smooth; color-scheme: light dark; }
 body { margin: 0; color: var(--text); background: var(--bg); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
 h1, h2, h3 { font-family: var(--head); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
 h2 { font-size: clamp(1.6rem, 4.5vw, 2.1rem); margin-bottom: 0.5em; }
@@ -282,3 +305,11 @@ a.card:hover { transform: translateY(-3px); }
   .marquee .dup { display: none; }
   .steps li { opacity: 1; }
 }
+
+/* Theme toggle */
+.theme-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+.theme-btn:hover { border-color: var(--text); }
+.theme-btn svg { transition: transform 0.4s var(--ease); }
+.theme-btn:active svg { transform: rotate(40deg) scale(0.9); }
+.site-nav .theme-btn { margin-left: 4px; }
+.site-nav-actions { display: flex; align-items: center; gap: 8px; }

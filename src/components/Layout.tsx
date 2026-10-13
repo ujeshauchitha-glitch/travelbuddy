@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Compass, CirclePlus, LifeBuoy, Luggage, MessageCircle, UserRound } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
+import ThemeToggle from './ThemeToggle'
 
 const TABS = [
   { to: '/', label: 'Trips', Icon: Compass, end: true },
@@ -26,6 +27,7 @@ export default function Layout() {
         </nav>
         <span className="app-user">
           <span className="muted small name">{profile?.displayName ?? user?.displayName}</span>
+          <ThemeToggle />
           <Link to="/help" className="icon-btn" aria-label="Help and safety"><LifeBuoy size={20} aria-hidden="true" /></Link>
         </span>
       </header>
