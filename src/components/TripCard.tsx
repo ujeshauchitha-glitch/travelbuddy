@@ -12,7 +12,7 @@ export default function TripCard({ trip }: { trip: Trip }) {
   const label = trip.mode === 'other' && trip.modeLabel ? trip.modeLabel : m.label
   const left = Math.max(0, trip.spotsOpen - (trip.memberIds.length - 1))
   return (
-    <Link to={`/trip/${trip.id}`} className="card trip">
+    <Link to={`/app/trip/${trip.id}`} className="card trip">
       <div className="row between">
         <span className="chip"><ModeIcon id={m.id} /> {label}{trip.number ? ` · ${trip.number}` : ''}</span>
         {audienceBadge(trip.audience) && <span className="chip safe"><ShieldCheck size={14} aria-hidden="true" /> {audienceBadge(trip.audience)}</span>}

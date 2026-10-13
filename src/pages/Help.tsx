@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { addDoc, collection, limit, onSnapshot, orderBy, query, serverTimestamp, where } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
@@ -65,6 +65,7 @@ export default function Help() {
   return (
     <>
       <h2>Help &amp; safety</h2>
+      <p className="muted small"><Link to="/about">About TravelBuddy and how your data is handled</Link></p>
 
       <div className="card sos">
         <strong>In danger or an emergency?</strong>

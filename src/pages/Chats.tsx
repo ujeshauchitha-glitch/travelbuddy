@@ -27,7 +27,7 @@ export default function Chats() {
       ) : convs.map((c) => {
         const other = c.uids.find((u) => u !== user!.uid) ?? ''
         return (
-          <Link key={c.id} to={`/chat/${c.id}?trip=${c.tripId}`} className="card">
+          <Link key={c.id} to={`/app/chat/${c.id}?trip=${c.tripId}`} className="card">
             <strong>{c.names?.[other] ?? 'Student'}</strong>
             <div className="muted small">{c.lastMessage}</div>
           </Link>

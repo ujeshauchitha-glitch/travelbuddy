@@ -68,7 +68,7 @@ export default function PostTrip() {
         createdAt: serverTimestamp(),
       }).filter(([, v]) => v !== undefined))
       const ref = await addDoc(collection(db, 'trips'), data)
-      nav(`/trip/${ref.id}`)
+      nav(`/app/trip/${ref.id}`)
     } catch {
       setError('Could not post the trip. Check your connection and try again.')
       setBusy(false)

@@ -1,11 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Coins, Handshake, Lock, MessageCircle, Route, ShieldCheck, Users } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { CAMPUS_DOMAIN } from '../lib/firebase'
 import { MODES } from '../lib/modes'
 import { Reveal, WordReveal, useScrollProgress, useScrollVars } from '../lib/motion'
 import ModeIcon from '../components/ModeIcon'
-import ThemeToggle from '../components/ThemeToggle'
+import { SiteFooter, SiteNav } from '../components/SiteChrome'
 import HeroScene from '../components/HeroScene'
 
 const STEPS = [
@@ -59,45 +60,51 @@ function Marquee({ children, reverse = false }: { children: React.ReactNode; rev
 }
 
 export default function Landing() {
-  const { signIn, error } = useAuth()
+  const { signIn, error, user, profile, loading } = useAuth()
+  const nav = useNavigate()
   const root = useRef<HTMLDivElement>(null)
+  // After a fresh sign-in on this page, continue into the app. A returning
+  // visitor with a saved session stays on the home page.
+  const wasSignedOut = useRef<boolean | null>(null)
+  useEffect(() => {
+    if (loading) return
+    if (wasSignedOut.current === true && user) nav('/app')
+    wasSignedOut.current = !user
+  }, [user, loading, nav])
+  const first = (profile?.displayName ?? user?.displayName ?? '').split(' ')[0]
   const stepsRef = useRef<HTMLOListElement>(null)
   const [reached, setReached] = useState(0)
   useScrollVars(root)
   useScrollProgress(stepsRef, STEPS.length, setReached)
 
   return (
-    <div className="site" ref={root}>
-      <div className="site-nav-wrap">
-        <header className="site-nav">
-          <a href="#top" className="brand">TravelBuddy</a>
-          <nav aria-label="Page sections" className="site-links">
-            <a href="#how">How it works</a>
-            <a href="#safety">Safety</a>
-            <a href="#faq">FAQ</a>
-          </nav>
-          <div className="site-nav-actions">
-            <ThemeToggle />
-            <button className="btn primary sm" onClick={signIn}>Sign in</button>
-          </div>
-        </header>
-      </div>
+    <div className="site" ref={root} data-auth={loading ? 'pending' : 'ready'}>
+      <SiteNav />
 
       <main id="top">
         <HeroScene
           a={
             <>
-              <p className="eyebrow rise" style={{ '--d': '0ms' } as React.CSSProperties}>For VIT students</p>
+              <p className="eyebrow rise" style={{ '--d': '0ms' } as React.CSSProperties}>{user && first ? `Welcome back, ${first}` : 'For VIT students'}</p>
               <h1 aria-label="Don’t travel alone. Don’t overpay."><WordReveal text="Don’t travel alone. Don’t overpay." /></h1>
               <p className="lede rise" style={{ '--d': '420ms' } as React.CSSProperties}>
                 Find students heading your way, by cab, train, flight or anything else. Split the cost,
                 share the ride, and know who you are travelling with.
               </p>
-              <div className="row center-row rise" style={{ '--d': '560ms' } as React.CSSProperties}>
-                <button className="btn primary lg" onClick={signIn}>
-                  Sign in with your VIT Google account <ArrowRight size={18} aria-hidden="true" />
-                </button>
-                <a className="btn lg" href="#how">See how it works</a>
+              <div className="row center-row rise auth-cta" style={{ '--d': '560ms' } as React.CSSProperties}>
+                {user ? (
+                  <>
+                    <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
+                    <Link className="btn lg" to="/app/post">Post a trip</Link>
+                  </>
+                ) : (
+                  <>
+                    <button className="btn primary lg" onClick={signIn}>
+                      Sign in with your VIT Google account <ArrowRight size={18} aria-hidden="true" />
+                    </button>
+                    <a className="btn lg" href="#how">See how it works</a>
+                  </>
+                )}
               </div>
               {error && <p className="error" role="alert">{error}</p>}
               <p className="fine rise" style={{ '--d': '680ms' } as React.CSSProperties}>A student-built project, not an official VIT service.</p>
@@ -126,7 +133,9 @@ export default function Landing() {
                   </div>
                 </div>
               </figure>
-              <a className="btn primary lg" href="#how">See how it works <ArrowRight size={18} aria-hidden="true" /></a>
+              {user
+                ? <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
+                : <a className="btn primary lg" href="#how">See how it works <ArrowRight size={18} aria-hidden="true" /></a>}
             </>
           }
         />
@@ -191,16 +200,15 @@ export default function Landing() {
         <section className="cta">
           <Reveal className="cta-inner">
             <h2>Ready for your next trip?</h2>
-            <p>Sign in with your <code>@{CAMPUS_DOMAIN}</code> account. Setting up takes a minute.</p>
-            <button className="btn primary lg" onClick={signIn}>Sign in with Google <ArrowRight size={18} aria-hidden="true" /></button>
+            <p>{user ? 'Browse what is planned, or post your own.' : <>Sign in with your <code>@{CAMPUS_DOMAIN}</code> account. Setting up takes a minute.</>}</p>
+            {user
+              ? <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
+              : <button className="btn primary lg" onClick={signIn}>Sign in with Google <ArrowRight size={18} aria-hidden="true" /></button>}
           </Reveal>
         </section>
       </main>
 
-      <footer className="site-foot">
-        <span>TravelBuddy is a student project. Not affiliated with or endorsed by VIT.</span>
-        <span>In an emergency in India, call <a href="tel:112">112</a>.</span>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

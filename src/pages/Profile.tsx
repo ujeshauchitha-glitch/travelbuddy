@@ -74,7 +74,7 @@ export default function Profile() {
       if (!ig) await deleteDoc(doc(db, 'profiles', uid, 'private', 'instagram'))
       await refreshProfile()
       setMsg('Saved.')
-      if (firstTime) nav('/')
+      if (firstTime) nav('/app')
     } catch {
       setError('Could not save your profile. Try again.')
     }

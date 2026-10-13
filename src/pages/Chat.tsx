@@ -85,7 +85,7 @@ export default function Chat() {
         <h2>{otherName}</h2>
         <div className="row">
           <button className="btn" onClick={toggleBlock}>{blocked ? 'Unblock' : 'Block'}</button>
-          <Link className="btn" to={`/help?category=safety${tripId ? `&trip=${tripId}` : ''}`}>Report</Link>
+          <Link className="btn" to={`/app/help?category=safety${tripId ? `&trip=${tripId}` : ''}`}>Report</Link>
         </div>
       </div>
       <div className="bubbles" aria-live="polite">

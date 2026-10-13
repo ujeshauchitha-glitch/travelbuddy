@@ -106,10 +106,10 @@ export default function TripDetail() {
   const remove = () => run(async () => {
     if (!confirm('Delete this trip?')) return
     await deleteDoc(doc(db, 'trips', trip.id))
-    nav('/')
+    nav('/app')
   })
 
-  const chatLink = (otherUid: string) => `/chat/${convId(user!.uid, otherUid)}?trip=${trip.id}`
+  const chatLink = (otherUid: string) => `/app/chat/${convId(user!.uid, otherUid)}?trip=${trip.id}`
 
   return (
     <>
@@ -129,7 +129,7 @@ export default function TripDetail() {
         </ul>
         {trip.notes && <p className="muted">{trip.notes}</p>}
         <p className="muted small">Hosted by {trip.hostName}</p>
-        {!isHost && <Link className="small" to={`/help?category=safety&trip=${trip.id}`}>Report this trip</Link>}
+        {!isHost && <Link className="small" to={`/app/help?category=safety&trip=${trip.id}`}>Report this trip</Link>}
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
