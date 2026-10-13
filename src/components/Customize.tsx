@@ -35,7 +35,7 @@ function Seg<K extends keyof Prefs>({ label, hint, field, options }: {
   )
 }
 
-function Toggle({ label, hint, field }: { label: string; hint?: string; field: 'doodles' | 'haptics' }) {
+function Toggle({ label, hint, field }: { label: string; hint?: string; field: 'doodles' | 'haptics' | 'fx' }) {
   const { prefs, set } = usePrefs()
   return (
     <label className="switch cz-switch">
@@ -126,6 +126,8 @@ export default function Customize() {
           <Seg label="Text size" field="size" options={[{ id: 's', label: 'Small' }, { id: 'm', label: 'Medium' }, { id: 'l', label: 'Large' }]} />
           <Seg label="Motion" hint="Calm keeps fades; Off stops all animation." field="motion" options={[{ id: 'full', label: 'Full' }, { id: 'calm', label: 'Calm' }, { id: 'off', label: 'Off' }]} />
           <Seg label="Illustrations" field="art" options={[{ id: 'stamps', label: 'Stamps' }, { id: 'icons', label: 'Icons only' }]} />
+          <Seg label="Cursor" hint="A pencil that leaves a faint trail. Mouse and trackpad only." field="cursor" options={[{ id: 'trail', label: 'Pencil + trail' }, { id: 'pencil', label: 'Pencil' }, { id: 'system', label: 'System' }]} />
+          <Toggle label="Interactive effects" hint="(ink ripples, magnetic buttons)" field="fx" />
           <Toggle label="Hand-drawn doodles" field="doodles" />
           <Toggle label="Tap vibration" hint="(phones)" field="haptics" />
         </section>

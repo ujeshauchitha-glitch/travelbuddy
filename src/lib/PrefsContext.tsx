@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { DEFAULTS, applyPrefs, haptic, loadPrefs, savePrefs, setHaptics, type Prefs } from './prefs'
+import { installFx } from './fx'
 
 interface PrefsApi {
   prefs: Prefs
@@ -27,6 +28,12 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
     savePrefs(prefs)
     setHaptics(prefs.haptics)
   }, [prefs])
+
+  // Ink ripples and magnetic buttons, unless switched off.
+  useEffect(() => {
+    if (!prefs.fx || prefs.motion === 'off') return
+    return installFx()
+  }, [prefs.fx, prefs.motion])
 
   // One light tap on anything pressable (phones only, and only if enabled).
   useEffect(() => {

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, BadgeCheck, Handshake, Lock, MessageCircle, ShieldCheck, Users } from 'lucide-react'
+import { ArrowRight, BadgeCheck, Handshake, Lock, MessageCircle, Plus, ShieldCheck, Users } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { CAMPUS_DOMAIN } from '../lib/firebase'
 import { Reveal, WordReveal } from '../lib/motion'
 import { SiteFooter, SiteNav } from '../components/SiteChrome'
 import ModeStamp from '../components/art/ModeStamp'
-import Travellers from '../components/art/Travellers'
+import { RoadDivider, SketchBackpack, SketchCompass, SketchPlane, SketchTicket, SketchTrain } from '../components/art/Sketches'
 import type { TravelMode } from '../lib/types'
 import { DoodleArrow, DoodleSpark, DoodleSquiggle, DoodleStar } from '../components/art/Doodles'
 
@@ -92,19 +92,20 @@ export default function Landing() {
               Find students heading your way, by cab, train, flight or anything else. Split the cost, share the ride,
               and know who you are travelling with.
             </p>
-            <div className="row rise auth-cta" style={{ '--d': '560ms' } as React.CSSProperties}>
+            <div className="cta-pair rise auth-cta" style={{ '--d': '560ms' } as React.CSSProperties}>
               {user ? (
                 <>
-                  <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
-                  <Link className="btn lg" to="/app/post">Post a trip +</Link>
+                  <Link className="btn primary xl" data-magnet to="/app">Find a trip <ArrowRight size={22} aria-hidden="true" /></Link>
+                  <Link className="btn xl" data-magnet to="/app/post"><Plus size={22} aria-hidden="true" /> Post a trip</Link>
                 </>
               ) : (
                 <>
-                  <button className="btn primary lg" onClick={signIn}>Find a trip <ArrowRight size={18} aria-hidden="true" /></button>
-                  <a className="btn lg" href="#how">How it works</a>
+                  <button className="btn primary xl" data-magnet onClick={signIn}>Find a trip <ArrowRight size={22} aria-hidden="true" /></button>
+                  <button className="btn xl" data-magnet onClick={signIn}><Plus size={22} aria-hidden="true" /> Post a trip</button>
                 </>
               )}
             </div>
+            <p className="how-link rise" style={{ '--d': '620ms' } as React.CSSProperties}><a href="#how">See how it works ↓</a></p>
             {error && <p className="error" role="alert">{error}</p>}
             <ul className="trust rise" style={{ '--d': '680ms' } as React.CSSProperties}>
               <li><BadgeCheck size={18} aria-hidden="true" /> Verified VIT students</li>
@@ -117,10 +118,17 @@ export default function Landing() {
           <div className="hero-art rise" style={{ '--d': '300ms' } as React.CSSProperties}>
             <p className="hand note-top" aria-hidden="true">same journey,<br />better company.</p>
             <div className="stamp-collage">
-              <img className="sc sc1" src="/art/stamp-train.webp" width={355} height={360} alt="Illustrated postage stamp of a train crossing a stone viaduct" />
-              <img className="sc sc2" src="/art/stamp-plane.webp" width={355} height={360} alt="Illustrated postage stamp of an aeroplane in the sky" />
-              <img className="sc sc3" src="/art/stamp-car.webp" width={355} height={360} alt="Illustrated postage stamp of a small car on a coast road" />
-              <img className="sc sc4" src="/art/stamp-bus.webp" width={355} height={360} alt="Illustrated postage stamp of a bus below the mountains" />
+              {[
+                ['train', 'sc1', 'Illustrated postage stamp of a train crossing a stone viaduct'],
+                ['plane', 'sc2', 'Illustrated postage stamp of an aeroplane in the sky'],
+                ['car', 'sc3', 'Illustrated postage stamp of a small car on a coast road'],
+                ['bus', 'sc4', 'Illustrated postage stamp of a bus below the mountains'],
+              ].map(([name, cls, alt], i) => (
+                <div key={name} className={`sc ${cls}`} style={{ '--k': i } as React.CSSProperties}>
+                  <img className="sc-sketch" src={`/art/stamp-${name}.webp`} width={355} height={360} alt="" aria-hidden="true" />
+                  <img className="sc-color" src={`/art/stamp-${name}.webp`} width={355} height={360} alt={alt} />
+                </div>
+              ))}
             </div>
             <span className="tape t1" aria-hidden="true" /><span className="tape t2" aria-hidden="true" />
             <DoodleArrow /><DoodleStar /><DoodleSquiggle /><DoodleSpark />
@@ -144,8 +152,10 @@ export default function Landing() {
           {!user && <p className="fine finder-hint">You will be asked to sign in with your VIT account first.</p>}
         </section>
 
+        <RoadDivider />
+
         <section className="section" aria-labelledby="routes-h">
-          <Reveal><h2 id="routes-h">Routes people plan from campus</h2></Reveal>
+          <Reveal className="sec-head"><h2 id="routes-h">Routes people plan from campus</h2><SketchPlane /></Reveal>
           <p className="muted small">Shortcuts to search by place. These are not live listings.</p>
           <div className="routes-row">
             {ROUTES.map((r, i) => (
@@ -162,21 +172,33 @@ export default function Landing() {
 
         <section className="banner-wrap">
           <Reveal className="banner">
-            <div className="banner-art"><Travellers /></div>
+            <div className="banner-art">
+              <img src="/art/travellers.webp" width={1200} height={420} loading="lazy" decoding="async"
+                alt="Two students with backpacks sitting on a hill, looking out over a lake towards purple mountains" />
+            </div>
             <div className="banner-copy">
               <h2>Good trips.<br />Great company.</h2>
               <p>Travel with people who get it: students, with a host who approves every join.</p>
             </div>
-            <button type="button" className="pass" onClick={() => go('')}>
-              <span className="mono">Join a trip</span>
-              <strong>Find yours</strong>
-              <ArrowRight size={18} aria-hidden="true" />
-            </button>
+            <div className="banner-actions">
+              <button type="button" className="pass" data-magnet onClick={() => go('')}>
+                <span className="mono">Join a trip</span>
+                <strong>Find yours</strong>
+                <ArrowRight size={22} aria-hidden="true" />
+              </button>
+              <button type="button" className="pass alt" data-magnet onClick={() => (user ? nav('/app/post') : signIn())}>
+                <span className="mono">Going somewhere?</span>
+                <strong>Post yours</strong>
+                <Plus size={22} aria-hidden="true" />
+              </button>
+            </div>
           </Reveal>
         </section>
 
+        <RoadDivider />
+
         <section id="how" className="section">
-          <Reveal><h2>How it works</h2></Reveal>
+          <Reveal className="sec-head"><h2>How it works</h2><SketchCompass /></Reveal>
           <div className="how-grid">
             {STEPS.map((s, i) => (
               <Reveal key={s.n} delay={i * 100} className="how-card">
@@ -189,7 +211,7 @@ export default function Landing() {
         </section>
 
         <section id="safety" className="section">
-          <Reveal><h2>Built around safety and privacy</h2></Reveal>
+          <Reveal className="sec-head"><h2>Built around safety and privacy</h2><SketchBackpack /></Reveal>
           <Reveal as="p" className="section-lede" delay={80}>
             Meeting people for a journey needs trust. These protections are enforced by the server,
             so they cannot be switched off by editing the page.
@@ -206,7 +228,7 @@ export default function Landing() {
         </section>
 
         <section id="faq" className="section">
-          <Reveal><h2>Questions</h2></Reveal>
+          <Reveal className="sec-head"><h2>Questions</h2><SketchTicket /></Reveal>
           <div className="faq-list">
             {FAQ.map((f, i) => (
               <Reveal key={f.q} delay={i * 60}>
@@ -218,6 +240,7 @@ export default function Landing() {
 
         <section className="cta">
           <Reveal className="cta-inner">
+            <SketchTrain />
             <h2>Ready for your next trip?</h2>
             <p>{user ? 'Browse what is planned, or post your own.' : <>Sign in with your <code>@{CAMPUS_DOMAIN}</code> account. Setting up takes a minute.</>}</p>
             {user

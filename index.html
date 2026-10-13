@@ -10,8 +10,9 @@
       try {
         var r = document.documentElement, p = JSON.parse(localStorage.getItem('tt-prefs') || 'null');
         if (p) {
-          var map = { palette: 'palette', texture: 'texture', edge: 'edge', line: 'line', corners: 'corners', density: 'density', size: 'fs', motion: 'motion', art: 'art' };
+          var map = { palette: 'palette', texture: 'texture', edge: 'edge', line: 'line', corners: 'corners', density: 'density', size: 'fs', motion: 'motion', art: 'art', cursor: 'cursor' };
           for (var k in map) if (typeof p[k] === 'string') r.setAttribute('data-' + map[k], p[k]);
+          if (typeof p.fx === 'boolean') r.setAttribute('data-fx', p.fx ? 'on' : 'off');
           if (typeof p.doodles === 'boolean') r.setAttribute('data-doodles', p.doodles ? 'on' : 'off');
           if (p.theme === 'light' || p.theme === 'dark') r.setAttribute('data-theme', p.theme);
         } else {

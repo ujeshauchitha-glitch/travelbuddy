@@ -17,6 +17,7 @@ import Help from './pages/Help'
 import { PrefsProvider } from './lib/PrefsContext'
 import { ToastProvider } from './components/Toast'
 import Customize from './components/Customize'
+import Cursor from './components/Cursor'
 
 /** Scrolls to the top on page changes, or to the #section when the link has one. */
 function ScrollManager() {
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Customize />
+        <Cursor />
       </AuthProvider>
     </BrowserRouter>
     </ToastProvider>

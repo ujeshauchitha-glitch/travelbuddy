@@ -19,6 +19,24 @@ export function SiteNav() {
   const root = useRef<HTMLElement>(null)
   const button = useRef<HTMLButtonElement>(null)
   const { pathname, hash } = useLocation()
+  const wrap = useRef<HTMLDivElement>(null)
+
+  // A pencil line under the bar that draws itself as you scroll down the page.
+  useEffect(() => {
+    const el = wrap.current
+    if (!el) return
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      el.style.setProperty('--sp', max > 0 ? String(Math.min(1, window.scrollY / max)) : '0')
+    }
+    const on = () => { if (!raf) raf = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', on, { passive: true })
+    window.addEventListener('resize', on)
+    return () => { window.removeEventListener('scroll', on); window.removeEventListener('resize', on); if (raf) cancelAnimationFrame(raf) }
+  }, [pathname])
 
   // Any navigation closes the menu.
   useEffect(() => { setOpen(false) }, [pathname, hash])
@@ -41,7 +59,7 @@ export function SiteNav() {
   }, [open])
 
   return (
-    <div className="site-nav-wrap">
+    <div className="site-nav-wrap" ref={wrap}>
       <header className="site-nav" ref={root}>
         <Link to="/" className="brand">Travel Tinder</Link>
         <nav aria-label="Page sections" className="site-links">
@@ -72,6 +90,9 @@ export function SiteNav() {
           </nav>
         )}
       </header>
+      <div className="scroll-pencil" aria-hidden="true">
+        <i><svg viewBox="0 0 40 40" width="22" height="22"><path d="M2 2 L12 6 L6 12 Z" fill="#E6B796" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /><path d="M12 6 L35 29 L29 35 L6 12 Z" fill="#F2D477" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg></i>
+      </div>
     </div>
   )
 }

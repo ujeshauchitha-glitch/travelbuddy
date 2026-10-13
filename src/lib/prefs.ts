@@ -12,6 +12,7 @@ export const OPTIONS = {
   size: ['s', 'm', 'l'],
   motion: ['full', 'calm', 'off'],
   art: ['stamps', 'icons'],
+  cursor: ['trail', 'pencil', 'system'],
 } as const
 
 type Opt<K extends keyof typeof OPTIONS> = (typeof OPTIONS)[K][number]
@@ -27,13 +28,15 @@ export interface Prefs {
   size: Opt<'size'>
   motion: Opt<'motion'>
   art: Opt<'art'>
+  cursor: Opt<'cursor'>
   doodles: boolean
   haptics: boolean
+  fx: boolean
 }
 
 export const DEFAULTS: Prefs = {
   theme: 'system', palette: 'coral', texture: 'paper', edge: 'soft', line: 'clean', corners: 'soft',
-  density: 'cozy', size: 'm', motion: 'full', art: 'stamps', doodles: true, haptics: true,
+  density: 'cozy', size: 'm', motion: 'full', art: 'stamps', cursor: 'trail', doodles: true, haptics: true, fx: true,
 }
 
 const KEY = 'tt-prefs'
@@ -49,6 +52,7 @@ export function sanitize(raw: unknown): Prefs {
   }
   if (typeof src.doodles === 'boolean') out.doodles = src.doodles
   if (typeof src.haptics === 'boolean') out.haptics = src.haptics
+  if (typeof src.fx === 'boolean') out.fx = src.fx
   return out as unknown as Prefs
 }
 
@@ -77,6 +81,8 @@ export function applyPrefs(p: Prefs) {
   r.dataset.fs = p.size
   r.dataset.motion = p.motion
   r.dataset.art = p.art
+  r.dataset.cursor = p.cursor
+  r.dataset.fx = p.fx ? 'on' : 'off'
   r.dataset.doodles = p.doodles ? 'on' : 'off'
   if (p.theme === 'system') r.removeAttribute('data-theme')
   else r.dataset.theme = p.theme
