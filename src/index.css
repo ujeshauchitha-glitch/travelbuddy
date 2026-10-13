@@ -426,3 +426,30 @@ a.card:hover { transform: translateY(-3px); }
 
 /* Anchored sections stop below the floating nav. */
 .section, #top { scroll-margin-top: 96px; }
+
+/* ================= floating panels ================= */
+:root {
+  --float-bg: #fbf7f3;
+  --float-text: #26181a;
+  --lift: 0 28px 60px rgba(70, 35, 25, 0.16), 0 3px 8px rgba(70, 35, 25, 0.06);
+}
+:root[data-theme='dark'] { --float-bg: #f4ede8; --lift: 0 28px 60px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.3); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) { --float-bg: #f4ede8; --lift: 0 28px 60px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.3); }
+}
+
+/* Benefits strip: a card inset from the edges, not a full-width band. */
+.band { border: 0; background: transparent; padding: 8px 16px 0; }
+.pillars { background: var(--surface); border: 1px solid var(--border); border-radius: 28px; box-shadow: var(--lift); padding: 32px 28px; }
+
+/* Safety: a rounded floating panel. */
+.section.tint { width: calc(100% - 32px); max-width: 1080px; margin-inline: auto; border-radius: 28px; padding: 56px 28px; border: 1px solid var(--border); box-shadow: var(--lift); }
+
+/* Closing call to action: an off-white card that floats above the page. */
+.cta { background: transparent; color: inherit; padding: 64px 16px 72px; }
+.cta-inner { max-width: 1040px; margin: 0 auto; background: var(--float-bg); color: var(--float-text); border-radius: 28px; padding: 64px 24px; box-shadow: var(--lift); }
+.cta p { color: var(--float-text); opacity: 0.75; }
+.cta code { background: rgba(38, 24, 26, 0.08); color: inherit; }
+.cta .btn.primary { background: #26181a; border-color: #26181a; color: #ffffff; }
+.tint-block { box-shadow: var(--lift); border: 1px solid var(--border); }
+@media (min-width: 760px) { .pillars { padding: 40px 36px; } .section.tint { padding: 64px 48px; } .cta-inner { padding: 80px 24px; } }
