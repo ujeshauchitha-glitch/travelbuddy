@@ -1,15 +1,15 @@
 /* Design tokens. Warm neutrals, near-black ink, one accent. The soft gradient
    is used only behind the landing hero so the app itself stays calm. */
 :root {
-  --bg: #fffaf7;
+  --bg: #fdeeed;
   --surface: #ffffff;
-  --tint: #fff0ec;
+  --tint: #f9e1e0;
   --text: #26181a;
   --muted: #6f5f60;
-  --border: #f0e0da;
+  --border: #f0d8d6;
   --ink: #26181a;
   --ink-text: #ffffff;
-  --soft: #fbece6;
+  --soft: #f8e3e1;
   --accent: #c8523f;
   --ok: #2e7d52;
   --danger: #b3261e;
@@ -429,7 +429,7 @@ a.card:hover { transform: translateY(-3px); }
 
 /* ================= floating panels ================= */
 :root {
-  --float-bg: #fbf7f3;
+  --float-bg: #fffaf8;
   --float-text: #26181a;
   --lift: 0 28px 60px rgba(70, 35, 25, 0.16), 0 3px 8px rgba(70, 35, 25, 0.06);
 }
