@@ -6,6 +6,8 @@ import { useAuth } from '../auth/AuthContext'
 import { AUDIENCES, DEFAULT_VISIBILITY, GENDERS, VISIBILITY_OPTIONS } from '../lib/modes'
 import type { Audience, ContactField, Gender, Visibility } from '../lib/types'
 import Select from '../components/Select'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { deleteAccount } from '../lib/deleteAccount'
 import { prettyName } from '../lib/names'
 
 const PHONE_RE = /^[+]?[0-9 ()-]{7,20}$/
@@ -29,6 +31,10 @@ export default function Profile() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteStep, setDeleteStep] = useState('')
+  const [deleteError, setDeleteError] = useState('')
 
   useEffect(() => { setGender(savedGender ?? '') }, [savedGender])
 
@@ -83,6 +89,30 @@ export default function Profile() {
     setBusy(false)
   }
 
+  const doDeleteAccount = async () => {
+    if (!user) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await deleteAccount(user, setDeleteStep)
+      nav('/', { replace: true })
+    } catch (e) {
+      console.error(e)
+      const code = (e as { code?: string }).code ?? ''
+      setDeleteError(
+        code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request'
+          ? 'You closed the Google window, so nothing was deleted.'
+          : code === 'auth/popup-blocked'
+            ? 'Your browser blocked the Google window. Allow pop-ups for this site and try again.'
+            : code === 'auth/user-mismatch'
+              ? 'Please confirm with the same Google account you are signed in with.'
+              : `Something went wrong${code ? ` (${code})` : ''}. Some data may already be removed. Please try again.`,
+      )
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const visSelect = (f: ContactField, what: string) => (
     <Select<Visibility>
       value={vis[f]}
@@ -93,6 +123,7 @@ export default function Profile() {
   )
 
   return (
+    <>
     <form onSubmit={save} className="form">
       <h2>{firstTime ? 'Set up your profile' : 'Your profile'}</h2>
       <label className="field"><span>Name *</span>
@@ -158,5 +189,38 @@ export default function Profile() {
       <button className="btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button>
       <button type="button" className="btn" onClick={logOut}>Log out</button>
     </form>
+
+    {!firstTime && (
+      <section className="danger-zone" aria-labelledby="danger-title">
+        <h3 id="danger-title">Delete account</h3>
+        <p className="muted">
+          Permanently erase your profile, trips and chats, and close your sign-in. This cannot be undone.
+        </p>
+        <button type="button" className="btn danger" onClick={() => { setDeleteError(''); setConfirmDelete(true) }}>Delete my account</button>
+      </section>
+    )}
+
+    <ConfirmDialog
+      open={confirmDelete}
+      danger
+      busy={deleting}
+      busyText={deleteStep}
+      error={deleteError}
+      requireText="DELETE"
+      title="Delete your account?"
+      message="This is permanent. You will be asked to confirm with Google first."
+      confirmLabel="Delete everything"
+      onConfirm={doDeleteAccount}
+      onCancel={() => setConfirmDelete(false)}
+    >
+      <ul className="modal-list">
+        <li>Your profile, phone, email, Instagram and gender are erased.</li>
+        <li>Trips you posted are deleted, with their join requests.</li>
+        <li>Your requests to other people's trips are withdrawn.</li>
+        <li>Your chats are deleted for you <strong>and the other person</strong>.</li>
+        <li>Reports you sent through Help are kept, so safety reports are not lost.</li>
+      </ul>
+    </ConfirmDialog>
+    </>
   )
 }

@@ -4,7 +4,8 @@ import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import {
   assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing'
-import { deleteDoc, doc, getDoc, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore'
+import { eraseUserData } from '../src/lib/deleteAccount'
 
 let env: RulesTestEnvironment
 
@@ -185,5 +186,102 @@ describe('deleting a trip', () => {
   it('lets the host delete a trip that already has join requests', async () => {
     await assertSucceeds(setDoc(doc(ctx('bob'), 'trips', 't1', 'requests', 'bob'), { status: 'pending' }))
     await assertSucceeds(deleteDoc(doc(ctx('alice'), 'trips', 't1')))
+  })
+})
+
+describe('account deletion', () => {
+  beforeEach(async () => {
+    await seedUser('alice', 'woman')
+    await seedUser('bob', 'man')
+    await assertSucceeds(setDoc(doc(ctx('alice'), 'trips', 't1'), trip('alice', 'anyone')))
+    await assertSucceeds(setDoc(doc(ctx('bob'), 'conversations', 'alice_bob'), {
+      uids: ['alice', 'bob'], names: { alice: 'A', bob: 'B' }, tripId: 't1', lastMessage: 'hi', lastAt: serverTimestamp(),
+    }))
+    await assertSucceeds(setDoc(doc(ctx('bob'), 'conversations', 'alice_bob', 'messages', 'm1'),
+      { senderId: 'bob', text: 'hello', createdAt: serverTimestamp() }))
+    await env.withSecurityRulesDisabled((c) =>
+      setDoc(doc(c.firestore(), 'connections', 'alice_bob'), { uids: ['alice', 'bob'], memberUid: 'bob', tripId: 't1' }))
+  })
+
+  it('lets someone delete only their own profile and private details', async () => {
+    await assertFails(deleteDoc(doc(ctx('bob'), 'profiles', 'alice')))
+    await assertFails(deleteDoc(doc(ctx('bob'), 'profiles', 'alice', 'private', 'phone')))
+    await assertSucceeds(deleteDoc(doc(ctx('alice'), 'profiles', 'alice', 'private', 'phone')))
+    await assertSucceeds(deleteDoc(doc(ctx('alice'), 'profiles', 'alice')))
+  })
+
+  it('lets a participant remove a chat and its messages, but not an outsider', async () => {
+    await assertFails(deleteDoc(doc(ctx('eve'), 'conversations', 'alice_bob', 'messages', 'm1')))
+    await assertFails(deleteDoc(doc(ctx('eve'), 'conversations', 'alice_bob')))
+    await assertSucceeds(deleteDoc(doc(ctx('alice'), 'conversations', 'alice_bob', 'messages', 'm1')))
+    await assertSucceeds(deleteDoc(doc(ctx('alice'), 'conversations', 'alice_bob')))
+  })
+
+  it('lets either person remove a connection, but not an outsider', async () => {
+    await assertFails(deleteDoc(doc(ctx('eve'), 'connections', 'alice_bob')))
+    await assertSucceeds(deleteDoc(doc(ctx('bob'), 'connections', 'alice_bob')))
+  })
+
+  it('still never lets anyone edit messages or connections', async () => {
+    await assertFails(setDoc(doc(ctx('bob'), 'conversations', 'alice_bob', 'messages', 'm1'),
+      { senderId: 'bob', text: 'edited', createdAt: serverTimestamp() }))
+    await assertFails(setDoc(doc(ctx('alice'), 'connections', 'alice_bob'), { uids: ['alice', 'bob'], memberUid: 'bob', tripId: 'zzz' }))
+  })
+
+  it('does not let anyone else delete a profile after it is gone', async () => {
+    await assertSucceeds(deleteDoc(doc(ctx('alice'), 'profiles', 'alice')))
+    await assertFails(getDoc(doc(ctx('bob'), 'profiles', 'alice', 'private', 'phone')))
+  })
+})
+
+describe('eraseUserData end to end (under the real rules)', () => {
+  it('removes everything about the person, and leaves other people untouched', async () => {
+    await seedUser('alice', 'woman')
+    await seedUser('bob', 'man')
+    await env.withSecurityRulesDisabled(async (c) => {
+      const a = c.firestore()
+      // alice hosts a trip with a request from bob; bob hosts one that alice asked to join
+      await setDoc(doc(a, 'trips', 'tA'), trip('alice', 'anyone'))
+      await setDoc(doc(a, 'trips', 'tA', 'requests', 'bob'), { status: 'accepted' })
+      await setDoc(doc(a, 'trips', 'tB'), trip('bob', 'anyone'))
+      await setDoc(doc(a, 'trips', 'tB', 'requests', 'alice'), { status: 'pending' })
+      await setDoc(doc(a, 'connections', 'alice_bob'), { uids: ['alice', 'bob'], memberUid: 'bob', tripId: 'tA' })
+      await setDoc(doc(a, 'conversations', 'alice_bob'), { uids: ['alice', 'bob'], names: { alice: 'A', bob: 'B' }, tripId: 'tA', lastMessage: 'hi' })
+      await setDoc(doc(a, 'conversations', 'alice_bob', 'messages', 'm1'), { senderId: 'alice', text: 'hey' })
+      await setDoc(doc(a, 'conversations', 'alice_bob', 'messages', 'm2'), { senderId: 'bob', text: 'hello' })
+      await setDoc(doc(a, 'profiles', 'alice', 'blocked', 'eve'), { createdAt: 1 })
+      await setDoc(doc(a, 'profiles', 'alice', 'private', 'instagram'), { value: 'alice_ig' })
+      await setDoc(doc(a, 'profiles', 'alice', 'private', 'email'), { value: 'alice@vitstudent.ac.in' })
+      await setDoc(doc(a, 'issues', 'i1'), { authorId: 'alice', category: 'safety', text: 'report', status: 'open' })
+    })
+
+    await eraseUserData(ctx('alice'), 'alice')
+
+    await env.withSecurityRulesDisabled(async (c) => {
+      const a = c.firestore()
+      const exists = async (...path: [string, ...string[]]) => (await getDoc(doc(a, ...path))).exists()
+      // gone
+      for (const path of [
+        ['profiles', 'alice'], ['profiles', 'alice', 'private', 'phone'], ['profiles', 'alice', 'private', 'gender'],
+        ['profiles', 'alice', 'private', 'instagram'], ['profiles', 'alice', 'private', 'email'], ['profiles', 'alice', 'blocked', 'eve'],
+        ['trips', 'tA'], ['trips', 'tA', 'requests', 'bob'], ['trips', 'tB', 'requests', 'alice'],
+        ['connections', 'alice_bob'], ['conversations', 'alice_bob'],
+        ['conversations', 'alice_bob', 'messages', 'm1'], ['conversations', 'alice_bob', 'messages', 'm2'],
+      ] as [string, ...string[]][]) {
+        if (await exists(...path)) throw new Error('still exists: ' + path.join('/'))
+      }
+      // kept
+      for (const path of [['issues', 'i1'], ['profiles', 'bob'], ['profiles', 'bob', 'private', 'phone'], ['trips', 'tB']] as [string, ...string[]][]) {
+        if (!(await exists(...path))) throw new Error('should still exist: ' + path.join('/'))
+      }
+      const leftoverTrips = (await getDocs(collection(a, 'trips'))).docs.map((d) => d.id)
+      if (leftoverTrips.join() !== 'tB') throw new Error('unexpected trips left: ' + leftoverTrips)
+    })
+  })
+
+  it('can be run twice (a retry after a partial failure)', async () => {
+    await seedUser('alice', 'woman')
+    await eraseUserData(ctx('alice'), 'alice')
+    await eraseUserData(ctx('alice'), 'alice')
   })
 })

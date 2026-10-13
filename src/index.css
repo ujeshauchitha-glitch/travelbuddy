@@ -585,3 +585,11 @@ a.card:hover { transform: translateY(-3px); }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 .btn.danger-solid { background: var(--danger); border-color: var(--danger); color: #fff6f5; }
 @media (prefers-reduced-motion: reduce) { .modal-backdrop, .modal { animation: none; } }
+
+/* ================= delete account ================= */
+.danger-zone { margin-top: 28px; padding: 18px; border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--border)); border-radius: var(--radius); background: var(--surface); }
+.danger-zone h3 { margin: 0 0 4px; color: var(--danger); }
+.danger-zone p { margin: 0 0 12px; max-width: 56ch; }
+.modal-list { margin: 0 0 14px; padding-left: 18px; font-size: 0.9rem; color: var(--muted); }
+.modal-list li { margin-bottom: 4px; }
+.modal-field { margin: 4px 0 14px; }

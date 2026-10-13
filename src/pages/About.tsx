@@ -67,8 +67,9 @@ export default function About() {
             <li>Your details are never shown to people you did not allow.</li>
           </ul>
           <p className="muted">
-            There is no self-serve “delete my account” button yet. If you want your data removed, send a report
-            from <strong>Help</strong> under “Account or privacy help”.
+            You can delete your account any time from <strong>Profile → Delete account</strong>. That erases your profile,
+            contact details, trips and chats (chats are removed for the other person too). Reports you sent through Help
+            are kept, so safety reports about other people are not lost.
           </p>
         </Reveal>
 

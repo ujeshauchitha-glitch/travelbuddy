@@ -77,7 +77,8 @@ service cloud.firestore {
         && validVisibility(request.resource.data.contactVisibility.instagram)
         && validVisibility(request.resource.data.contactVisibility.gender);
 
-      allow delete: if false;
+      // A person can erase their own profile (account deletion).
+      allow delete: if isCampus() && isSelf(uid);
 
       // Contact details and gender live in separate documents so each one can
       // have its own visibility: /profiles/{uid}/private/{field}
@@ -176,7 +177,9 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/trips/$(request.resource.data.tripId)/requests/$(request.resource.data.memberUid)).data.status
              == 'accepted';
 
-      allow update, delete: if false;
+      allow update: if false;
+      // Either person can remove the link (used when deleting an account).
+      allow delete: if isCampus() && request.auth.uid in resource.data.uids;
     }
 
     // ---------- private chat ----------
@@ -208,7 +211,8 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'lastAt'])
         && !isBlocked(otherUid(resource.data.uids), request.auth.uid);
 
-      allow delete: if false;
+      // Deleting an account removes its chats for both people.
+      allow delete: if isCampus() && request.auth.uid in resource.data.uids;
 
       match /messages/{mid} {
         allow read: if isCampus()
@@ -225,7 +229,9 @@ service cloud.firestore {
           && !isBlocked(otherUid(getAfter(/databases/$(database)/documents/conversations/$(cid)).data.uids),
                         request.auth.uid);
 
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if isCampus()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(cid)).data.uids;
       }
     }
 
