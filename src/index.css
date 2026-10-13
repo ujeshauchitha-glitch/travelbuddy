@@ -471,3 +471,12 @@ a.card:hover { transform: translateY(-3px); }
 .select-opt .opt-hint { display: block; font-size: 0.8rem; color: var(--muted); }
 .select-opt svg { flex: none; color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .select-list { animation: none; } .select-btn svg { transition: none; } }
+
+/* ================= phone menu ================= */
+.site-nav { position: relative; }
+.site-menu { position: absolute; left: 0; right: 0; top: calc(100% + 8px); display: grid; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--lift); animation: select-in 0.16s var(--ease); }
+.site-menu a { display: flex; align-items: center; min-height: 48px; padding: 0 16px; border-radius: 12px; color: var(--text); text-decoration: none; font-weight: 600; }
+.site-menu a:hover, .site-menu a:focus-visible { background: var(--soft); }
+.site-menu a + a { margin-top: 2px; }
+@media (min-width: 760px) { .menu-btn, .site-menu { display: none; } }
+@media (prefers-reduced-motion: reduce) { .site-menu { animation: none; } }
