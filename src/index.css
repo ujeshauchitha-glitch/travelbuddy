@@ -39,15 +39,15 @@
    Light and their system prefers dark. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #1c1717;
-    --surface: #272020;
-    --tint: #241d1d;
+    --bg: #211719;
+    --surface: #2c2123;
+    --tint: #291e21;
     --text: #f6ece8;
     --muted: #b3a29d;
-    --border: #3d3231;
+    --border: #44343a;
     --ink: #f6ece8;
-    --ink-text: #1c1717;
-    --soft: #322828;
+    --ink-text: #211719;
+    --soft: #37292d;
     --accent: #ff9a85;
     --ok: #6cc59a;
     --danger: #ff8a7a;
@@ -71,15 +71,15 @@
   }
 }
 :root[data-theme='dark'] {
-  --bg: #1c1717;
-  --surface: #272020;
-  --tint: #241d1d;
+  --bg: #211719;
+  --surface: #2c2123;
+  --tint: #291e21;
   --text: #f6ece8;
   --muted: #b3a29d;
-  --border: #3d3231;
+  --border: #44343a;
   --ink: #f6ece8;
-  --ink-text: #1c1717;
-  --soft: #322828;
+  --ink-text: #211719;
+  --soft: #37292d;
   --accent: #ff9a85;
   --ok: #6cc59a;
   --danger: #ff8a7a;
