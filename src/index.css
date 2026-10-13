@@ -194,34 +194,13 @@ input[readonly] { background: var(--soft); }
 .ink-s.thin { stroke-width: 1.1px; opacity: 0.7; }
 .ink-fill { fill: #242126; }
 .hatch-line { stroke: #242126; stroke-width: 1px; opacity: 0.35; }
-.mode-art, .postcard-art, .travellers-art { display: block; width: 100%; height: 100%; }
+.travellers-art { display: block; width: 100%; height: 100%; }
 .mode-train { --mode-color: var(--sage); }
 .mode-bus { --mode-color: var(--plum); }
 .mode-flight, .mode-ferry { --mode-color: var(--sky); }
 .mode-cab, .mode-auto { --mode-color: var(--butter); }
 .mode-metro, .mode-bike { --mode-color: var(--mint); }
 .mode-other { --mode-color: var(--sand); }
-.ma-sky { fill: var(--mode-color); }
-.ma-sun { fill: #FFF9F0; }
-.ma-far { fill: color-mix(in srgb, var(--mode-color) 65%, #FFF9F0); }
-.ma-hill { fill: color-mix(in srgb, var(--mode-color) 45%, #A8B79A); }
-.ma-tree { fill: #7E9470; }
-.ma-coral { fill: #F0644F; }
-.ma-cream { fill: #FFF9F0; }
-.ma-butter { fill: #F2D477; }
-.ma-glass { fill: #A9C9D6; }
-.pc-sky { fill: #A9C9D6; }
-.pc-sun { fill: #F2D477; }
-.pc-cloudfill { fill: #FFF9F0; }
-.pc-far { fill: #B99AAE; }
-.pc-mid { fill: #A8B79A; }
-.pc-water { fill: #8FB6C4; }
-.pc-tree { fill: #7E9470; }
-.pc-stone { fill: #D9C7AD; }
-.pc-arch { fill: #8FB6C4; }
-.pc-coral { fill: #F0644F; }
-.pc-cream { fill: #FFF9F0; }
-.pc-glass { fill: #A9C9D6; }
 .tr-sky { fill: #A9C9D6; }
 .tr-sun { fill: #F2D477; }
 .tr-far { fill: #B99AAE; }
@@ -232,11 +211,6 @@ input[readonly] { background: var(--soft); }
 .tr-plum { fill: #B99AAE; }
 .tr-denim { fill: #284B63; }
 .tr-skin { fill: #E6B796; }
-.pc-train { animation: train-roll 28s linear infinite; }
-.pc-cloud { animation: cloud-drift 90s linear infinite; }
-.pc-cloud.c2 { animation-duration: 140s; animation-delay: -50s; }
-@keyframes train-roll { from { transform: translateX(-380px); } to { transform: translateX(720px); } }
-@keyframes cloud-drift { from { transform: translateX(-160px); } to { transform: translateX(760px); } }
 
 /* ---------------------------------------------------------------- public site */
 .site { min-height: 100dvh; overflow-x: clip; }
@@ -263,8 +237,6 @@ input[readonly] { background: var(--soft); }
 .trust svg { color: var(--ok); }
 
 .hero-art { position: relative; padding: 26px 8px 46px; }
-.postcard { position: relative; padding: 10px; background: var(--surface); border: 2px solid var(--line); box-shadow: 6px 6px 0 var(--edge); rotate: 1.2deg; }
-.postcard > svg { aspect-ratio: 8 / 5; height: auto; }
 .tape { position: absolute; width: 88px; height: 26px; background: var(--butter); border: 1.5px solid color-mix(in srgb, var(--line) 35%, transparent); opacity: 0.9; }
 .tape.t1 { top: 12px; left: -10px; rotate: -38deg; }
 .tape.t2 { bottom: 70px; right: -12px; rotate: 32deg; }
@@ -451,16 +423,40 @@ input[readonly] { background: var(--soft); }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .w, .rise, .reveal, .app-main > *, .pc-train, .pc-cloud { animation: none; opacity: 1; transform: none; transition: none; }
+  .w, .rise, .reveal, .app-main > * { animation: none; opacity: 1; transform: none; transition: none; }
   .skeleton { animation: none; }
 }
 
 .login { max-width: 440px; text-align: left; }
 
-.pc-train { animation-delay: -9s; }
 
 /* illustrations fit by height and the sky colour fills the rest of the frame */
-.tc-art, .rc-art { background: var(--mode-color); }
-.tc-art .mode-art, .rc-art .mode-art { overflow: visible; }
 
 .brand { white-space: nowrap; }
+
+/* ---------------------------------------------------------------- postage stamps */
+.mode-stamp { display: block; width: 100%; height: auto; filter: drop-shadow(2px 2px 0 var(--edge)); }
+.stamp-fallback { display: grid; place-items: center; width: 100%; aspect-ratio: 1; color: #242126; background: var(--mode-color); border: 3px dashed var(--brick); border-radius: 4px; }
+
+/* hero: a small collage of stamps, a little askew and held down with tape */
+.stamp-collage { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 520px; margin: 0 auto; padding: 6px; }
+.sc { width: 100%; height: auto; filter: drop-shadow(4px 4px 0 var(--edge)); transition: rotate 0.25s var(--ease), scale 0.25s var(--ease); }
+.sc1 { rotate: -3deg; }
+.sc2 { rotate: 2.5deg; translate: 0 18px; }
+.sc3 { rotate: 2deg; }
+.sc4 { rotate: -2.5deg; translate: 0 18px; }
+.sc:hover { rotate: 0deg; scale: 1.04; }
+.tape.t1 { top: 0; left: 6px; }
+.tape.t2 { bottom: 78px; right: 4px; }
+
+/* a stamp on each ticket */
+.tc-main { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 14px; align-items: start; padding: 16px 16px 4px; }
+.tc-stamp { rotate: -3deg; margin-top: 2px; }
+.tc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tc-tag { padding: 2px 8px; font: 700 0.66rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: #242126; background: var(--mode-color); border: 1.5px solid var(--line); }
+.tc-safe { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font: 700 0.66rem var(--mono); text-transform: uppercase; color: #242126; background: var(--plum); border: 1.5px solid var(--line); }
+.tc-body { padding: 0; }
+
+/* route cards */
+.rc-art { position: relative; display: grid; place-items: center; height: 150px; margin-bottom: 8px; background: var(--soft); border-bottom: 2px solid var(--line); }
+.rc-art .mode-stamp, .rc-art .stamp-fallback { width: auto; height: 118px; aspect-ratio: 1; rotate: -2deg; }

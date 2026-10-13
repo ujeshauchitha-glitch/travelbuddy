@@ -5,8 +5,7 @@ import { useAuth } from '../auth/AuthContext'
 import { CAMPUS_DOMAIN } from '../lib/firebase'
 import { Reveal, WordReveal } from '../lib/motion'
 import { SiteFooter, SiteNav } from '../components/SiteChrome'
-import TrainPostcard from '../components/art/TrainPostcard'
-import ModeArt from '../components/art/ModeArt'
+import ModeStamp from '../components/art/ModeStamp'
 import Travellers from '../components/art/Travellers'
 import type { TravelMode } from '../lib/types'
 
@@ -116,7 +115,12 @@ export default function Landing() {
 
           <div className="hero-art rise" style={{ '--d': '300ms' } as React.CSSProperties}>
             <p className="hand note-top" aria-hidden="true">same journey,<br />better company.</p>
-            <div className="postcard"><TrainPostcard /></div>
+            <div className="stamp-collage">
+              <img className="sc sc1" src="/art/stamp-train.webp" width={355} height={360} alt="Illustrated postage stamp of a train crossing a stone viaduct" />
+              <img className="sc sc2" src="/art/stamp-plane.webp" width={355} height={360} alt="Illustrated postage stamp of an aeroplane in the sky" />
+              <img className="sc sc3" src="/art/stamp-car.webp" width={355} height={360} alt="Illustrated postage stamp of a small car on a coast road" />
+              <img className="sc sc4" src="/art/stamp-bus.webp" width={355} height={360} alt="Illustrated postage stamp of a bus below the mountains" />
+            </div>
             <span className="tape t1" aria-hidden="true" /><span className="tape t2" aria-hidden="true" />
             <figure className="ticket-float" aria-label="Example of a trip ticket">
               <figcaption className="mono">Example</figcaption>
@@ -145,7 +149,7 @@ export default function Landing() {
             {ROUTES.map((r, i) => (
               <Reveal key={r.code} delay={i * 80}>
                 <button type="button" className={`route-card mode-${r.mode}`} onClick={() => go(r.q)}>
-                  <div className="rc-art"><ModeArt mode={r.mode} /><span className="rc-code mono">{r.code}</span></div>
+                  <div className="rc-art"><ModeStamp mode={r.mode} /><span className="rc-code mono">{r.code}</span></div>
                   <strong>{r.title}</strong>
                   <span className="muted small">{r.note} · tap to search</span>
                 </button>
