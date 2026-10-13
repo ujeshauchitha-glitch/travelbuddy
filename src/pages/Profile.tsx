@@ -5,6 +5,7 @@ import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import { AUDIENCES, DEFAULT_VISIBILITY, GENDERS, VISIBILITY_OPTIONS } from '../lib/modes'
 import type { Audience, ContactField, Gender, Visibility } from '../lib/types'
+import Select from '../components/Select'
 
 const PHONE_RE = /^[+]?[0-9 ()-]{7,20}$/
 const IG_RE = /^[A-Za-z0-9._]{1,30}$/
@@ -82,9 +83,12 @@ export default function Profile() {
   }
 
   const visSelect = (f: ContactField, what: string) => (
-    <select value={vis[f]} onChange={(e) => setVis({ ...vis, [f]: e.target.value as Visibility })} aria-label={`Who can see your ${what}`}>
-      {VISIBILITY_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-    </select>
+    <Select<Visibility>
+      value={vis[f]}
+      onChange={(v) => setVis({ ...vis, [f]: v })}
+      ariaLabel={`Who can see your ${what}`}
+      options={VISIBILITY_OPTIONS.map((o) => ({ value: o.id, label: o.label, hint: o.hint }))}
+    />
   )
 
   return (
@@ -124,24 +128,29 @@ export default function Profile() {
         to anyone unless you allow it below. Trips with a restriction are enforced by the server.
       </p>
       <div className="contact">
-        <label className="field"><span>Gender *</span>
-          <select value={gender} onChange={(e) => setGender(e.target.value as Gender)} required>
-            <option value="" disabled>Select…</option>
-            {GENDERS.map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}
-          </select></label>
+        <div className="field"><span id="gender-label">Gender *</span>
+          <Select<Gender>
+            value={gender}
+            onChange={setGender}
+            labelledBy="gender-label"
+            placeholder="Select…"
+            options={GENDERS.map((g) => ({ value: g.id, label: g.label }))}
+          /></div>
         {visSelect('gender', 'gender')}
       </div>
-      <label className="field"><span>I prefer to travel with</span>
-        <select value={pref} onChange={(e) => setPref(e.target.value as Audience)}>
-          {AUDIENCES.map((a) => (
-            <option key={a.id} value={a.id}
-              disabled={(a.id === 'women_only' && gender !== 'woman') || (a.id === 'men_only' && gender !== 'man')}>
-              {a.label}
-            </option>
-          ))}
-        </select>
+      <div className="field"><span id="pref-label">I prefer to travel with</span>
+        <Select<Audience>
+          value={pref}
+          onChange={setPref}
+          labelledBy="pref-label"
+          options={AUDIENCES.map((a) => ({
+            value: a.id,
+            label: a.label,
+            disabled: (a.id === 'women_only' && gender !== 'woman') || (a.id === 'men_only' && gender !== 'man'),
+          }))}
+        />
         <small className="muted">This is the default when you post a trip. You can change it for each trip.</small>
-      </label>
+      </div>
 
       {error && <p className="error" role="alert">{error}</p>}
       {msg && <p className="ok" role="status">{msg}</p>}

@@ -8,6 +8,7 @@ import { samePlace } from '../lib/places'
 import type { Audience, Place, TravelMode } from '../lib/types'
 import PlaceInput from '../components/PlaceInput'
 import ModeIcon from '../components/ModeIcon'
+import Select from '../components/Select'
 
 const localNow = () => {
   const d = new Date(Date.now() + 3600_000)
@@ -114,12 +115,15 @@ export default function PostTrip() {
       </div>
       <label className="field"><span>Notes</span>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={400} rows={3} /></label>
-      <label className="field"><span>Who can join *</span>
-        <select value={audience} onChange={(e) => setAudience(e.target.value as Audience)}>
-          {AUDIENCES.map((a) => <option key={a.id} value={a.id} disabled={!allowed(a.id)}>{a.label}</option>)}
-        </select>
+      <div className="field"><span id="audience-label">Who can join *</span>
+        <Select<Audience>
+          value={audience}
+          onChange={setAudience}
+          labelledBy="audience-label"
+          options={AUDIENCES.map((a) => ({ value: a.id, label: a.label, disabled: !allowed(a.id) }))}
+        />
         <small className="muted">Women-only and men-only trips are enforced by the server: nobody else can send a join request.</small>
-      </label>
+      </div>
       <label className="check"><input type="checkbox" checked={luggage} onChange={(e) => setLuggage(e.target.checked)} /> Space for luggage</label>
       {error && <p className="error" role="alert">{error}</p>}
       <button className="btn primary" disabled={busy}>{busy ? 'Posting…' : 'Post trip'}</button>

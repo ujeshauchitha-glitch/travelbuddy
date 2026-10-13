@@ -4,6 +4,7 @@ import { addDoc, collection, limit, onSnapshot, orderBy, query, serverTimestamp,
 import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import type { Issue, IssueCategory } from '../lib/types'
+import Select from '../components/Select'
 
 const CATEGORIES: { id: IssueCategory; label: string }[] = [
   { id: 'safety', label: 'Safety concern or report a person/trip' },
@@ -91,10 +92,13 @@ export default function Help() {
 
       <h3>Report a problem or send feedback</h3>
       <form onSubmit={submit} className="form">
-        <label className="field"><span>What is this about?</span>
-          <select value={category} onChange={(e) => setCategory(e.target.value as IssueCategory)}>
-            {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-          </select></label>
+        <div className="field"><span id="category-label">What is this about?</span>
+          <Select<IssueCategory>
+            value={category}
+            onChange={setCategory}
+            labelledBy="category-label"
+            options={CATEGORIES.map((c) => ({ value: c.id, label: c.label }))}
+          /></div>
         {tripId && <p className="muted small">This report will be linked to the trip you came from.</p>}
         <label className="field"><span>Details</span>
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={2000} required

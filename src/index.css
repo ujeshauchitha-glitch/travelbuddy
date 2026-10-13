@@ -453,3 +453,21 @@ a.card:hover { transform: translateY(-3px); }
 .cta .btn.primary { background: #26181a; border-color: #26181a; color: #fff3f1; }
 .tint-block { box-shadow: var(--lift); border: 1px solid var(--border); }
 @media (min-width: 760px) { .pillars { padding: 40px 36px; } .section.tint { padding: 64px 48px; } .cta-inner { padding: 80px 24px; } }
+
+/* ================= custom dropdown ================= */
+.select { position: relative; }
+.select-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 13px; cursor: pointer; }
+.select-btn:hover { border-color: color-mix(in srgb, var(--text) 40%, var(--border)); }
+.select-btn.open { border-color: var(--text); }
+.select-btn svg { flex: none; color: var(--muted); transition: transform 0.2s var(--ease); }
+.select-btn.open svg { transform: rotate(180deg); }
+.select-btn .placeholder { color: var(--muted); }
+.select-list { position: absolute; z-index: 60; left: 0; right: 0; top: calc(100% + 6px); margin: 0; padding: 6px; list-style: none; max-height: 280px; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--lift); animation: select-in 0.14s var(--ease); }
+@keyframes select-in { from { opacity: 0; transform: translateY(-4px); } }
+.select-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: 10px; cursor: pointer; }
+.select-opt.active { background: var(--soft); }
+.select-opt.disabled { opacity: 0.45; cursor: not-allowed; }
+.select-opt .opt-label { display: block; font-weight: 500; }
+.select-opt .opt-hint { display: block; font-size: 0.8rem; color: var(--muted); }
+.select-opt svg { flex: none; color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .select-list { animation: none; } .select-btn svg { transition: none; } }
