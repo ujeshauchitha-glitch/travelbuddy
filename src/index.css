@@ -168,7 +168,7 @@ input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var
 
 /* ---------- signed-in app shell ---------- */
 .app { min-height: 100dvh; display: flex; flex-direction: column; }
-.app-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 16px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.app-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 16px; background: color-mix(in srgb, var(--bg) 88%, transparent); border-bottom: 1px solid var(--border); }
 .app-user { display: flex; align-items: center; gap: 10px; }
 .icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; color: var(--text); border: 1px solid var(--border); background: var(--surface); }
 .app-main { width: 100%; max-width: 920px; margin: 0 auto; padding: 20px 16px calc(var(--tab-h) + 32px); flex: 1; }
@@ -204,7 +204,7 @@ input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var
 /* ---------- public landing page ---------- */
 .site { min-height: 100dvh; overflow-x: clip; }
 .site-nav-wrap { position: fixed; top: 0; left: 0; right: 0; z-index: 40; padding: 14px 14px 0; pointer-events: none; }
-.site-nav { pointer-events: auto; display: flex; align-items: center; gap: 24px; justify-content: space-between; max-width: 1080px; margin: 0 auto; padding: 10px 14px 10px 20px; border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 20px; background: color-mix(in srgb, var(--bg) 62%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.site-nav { pointer-events: auto; display: flex; align-items: center; gap: 24px; justify-content: space-between; max-width: 1080px; margin: 0 auto; padding: 10px 14px 10px 20px; border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 20px; background: color-mix(in srgb, var(--bg) 62%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .site-links { display: none; gap: 24px; margin-left: auto; margin-right: 8px; }
 .site-links a { color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.95rem; }
 .site-links a:hover { text-decoration: underline; }
@@ -495,16 +495,16 @@ a.card:hover { transform: translateY(-3px); }
 .app-bar { position: fixed; top: 12px; left: 12px; right: 12px; z-index: 40; isolation: isolate;
   max-width: 960px; margin: 0 auto; padding: 8px 10px 8px 18px;
   border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 20px;
-  background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  background: transparent; }
 .app-bar::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
-  background: color-mix(in srgb, var(--bg) 62%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  background: color-mix(in srgb, var(--bg) 62%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .app-main { padding-top: 96px; }
 .icon-btn { width: 36px; height: 36px; }
 
 @media (max-width: 759px) {
   .app-main { padding-bottom: calc(var(--tab-h) + 24px); }
   .app-nav { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); height: 62px; padding: 6px; gap: 2px;
-    background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--lift); }
   .app-nav a { border-radius: 16px; }
   .app-nav a.active { background: var(--soft); color: var(--text); }
