@@ -6,6 +6,7 @@ import {
 import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import type { Message } from '../lib/types'
+import { prettyName } from '../lib/names'
 
 export default function Chat() {
   const { cid } = useParams()
@@ -27,7 +28,7 @@ export default function Chat() {
 
   useEffect(() => {
     if (!valid) return
-    getDoc(doc(db, 'profiles', other)).then((s) => s.exists() && setOtherName(s.data().displayName)).catch(() => {})
+    getDoc(doc(db, 'profiles', other)).then((s) => s.exists() && setOtherName(prettyName(s.data().displayName))).catch(() => {})
     getDoc(doc(db, 'conversations', cid!)).then((s) => setExists(s.exists())).catch(() => setExists(false))
     return onSnapshot(doc(db, 'profiles', me, 'blocked', other), (s) => setBlocked(s.exists()), () => {})
   }, [valid, cid, other, me])

@@ -10,6 +10,8 @@ import { audienceBadge, canJoinAudience, convId, modeInfo } from '../lib/modes'
 import type { ContactField, JoinRequest, Trip } from '../lib/types'
 import { fmtWhen } from '../components/TripCard'
 import ModeIcon from '../components/ModeIcon'
+import RouteVisual from '../components/RouteVisual'
+import { initials, prettyName } from '../lib/names'
 
 // Reads one field. The server decides whether we are allowed.
 function ContactRow({ uid, field, label }: { uid: string; field: ContactField; label: string }) {
@@ -118,8 +120,8 @@ export default function TripDetail() {
           <span className="chip"><ModeIcon id={m.id} /> {label}{trip.number ? ` · ${trip.number}` : ''}</span>
           {badge && <span className="chip safe"><ShieldCheck size={14} aria-hidden="true" /> {badge}</span>}
         </div>
-        <h2>{trip.origin.name} → {trip.destination.name}</h2>
-        <p>{fmtWhen(trip)}</p>
+        <RouteVisual origin={trip.origin} destination={trip.destination} mode={trip.mode} />
+        <p className="when-line">{fmtWhen(trip)}</p>
         <ul className="plain">
           {trip.pickupNote && <li>Meet at: {trip.pickupNote}</li>}
           {trip.carrier && <li>{trip.carrier}</li>}
@@ -128,7 +130,7 @@ export default function TripDetail() {
           <li>{spotsLeft} of {trip.spotsOpen} spots open</li>
         </ul>
         {trip.notes && <p className="muted">{trip.notes}</p>}
-        <p className="muted small">Hosted by {trip.hostName}</p>
+        <p className="host small"><span className="avatar" aria-hidden="true">{initials(trip.hostName)}</span> Hosted by {prettyName(trip.hostName)}</p>
         {!isHost && <Link className="small" to={`/app/help?category=safety&trip=${trip.id}`}>Report this trip</Link>}
       </div>
 
@@ -141,7 +143,7 @@ export default function TripDetail() {
           {requests.map((r) => (
             <div key={r.uid} className="card">
               <div className="row between">
-                <strong>{r.displayName}</strong>
+                <strong>{prettyName(r.displayName)}</strong>
                 <span className="chip">{r.status}</span>
               </div>
               <div className="row">
@@ -153,7 +155,7 @@ export default function TripDetail() {
                 )}
                 <Link className="btn" to={chatLink(r.uid)}>Message</Link>
               </div>
-              {r.status === 'accepted' && <Contacts uid={r.uid} name={r.displayName} />}
+              {r.status === 'accepted' && <Contacts uid={r.uid} name={prettyName(r.displayName)} />}
             </div>
           ))}
           <button className="btn danger" onClick={remove}>Delete trip</button>
@@ -161,8 +163,8 @@ export default function TripDetail() {
       ) : isMember ? (
         <>
           <p className="ok">You are in this trip.</p>
-          <Link className="btn primary" to={chatLink(trip.hostId)}>Message {trip.hostName}</Link>
-          <Contacts uid={trip.hostId} name={trip.hostName} />
+          <Link className="btn primary" to={chatLink(trip.hostId)}>Message {prettyName(trip.hostName)}</Link>
+          <Contacts uid={trip.hostId} name={prettyName(trip.hostName)} />
         </>
       ) : (
         <>
@@ -180,7 +182,7 @@ export default function TripDetail() {
               {spotsLeft === 0 ? 'Trip is full' : 'Request to join'}
             </button>
           )}
-          {eligible && <Link className="btn" to={chatLink(trip.hostId)}>Ask {trip.hostName} a question</Link>}
+          {eligible && <Link className="btn" to={chatLink(trip.hostId)}>Ask {prettyName(trip.hostName)} a question</Link>}
         </>
       )}
     </>

@@ -4,6 +4,7 @@ import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestor
 import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import type { Conversation } from '../lib/types'
+import { initials, prettyName } from '../lib/names'
 
 export default function Chats() {
   const { user } = useAuth()
@@ -27,9 +28,10 @@ export default function Chats() {
       ) : convs.map((c) => {
         const other = c.uids.find((u) => u !== user!.uid) ?? ''
         return (
-          <Link key={c.id} to={`/app/chat/${c.id}?trip=${c.tripId}`} className="card">
-            <strong>{c.names?.[other] ?? 'Student'}</strong>
-            <div className="muted small">{c.lastMessage}</div>
+          <Link key={c.id} to={`/app/chat/${c.id}?trip=${c.tripId}`} className="card chat-row">
+            <span className="avatar lg" aria-hidden="true">{initials(c.names?.[other])}</span>
+            <span className="chat-meta"><strong>{prettyName(c.names?.[other])}</strong>
+            <span className="muted small">{c.lastMessage}</span></span>
           </Link>
         )
       })}

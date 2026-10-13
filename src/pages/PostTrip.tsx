@@ -77,56 +77,79 @@ export default function PostTrip() {
   }
 
   return (
-    <form onSubmit={submit} className="form">
-      <h2>Post a trip</h2>
-      <div className="chips">
-        {MODES.map((m) => (
-          <button type="button" key={m.id} className={mode === m.id ? 'chip active' : 'chip'} onClick={() => setMode(m.id)}>
-            <ModeIcon id={m.id} /> {m.label}
-          </button>
-        ))}
-      </div>
-      {mode === 'other' && (
-        <label className="field"><span>How are you travelling? *</span>
-          <input value={modeLabel} onChange={(e) => setModeLabel(e.target.value)} maxLength={40} placeholder="e.g. Tempo traveller, rental car" />
-        </label>
-      )}
-      <PlaceInput label="From" value={origin} onChange={setOrigin} required />
-      <PlaceInput label="To" value={destination} onChange={setDestination} required />
-      <label className="field"><span>Meeting / pick-up spot</span>
-        <input value={pickupNote} onChange={(e) => setPickupNote(e.target.value)} maxLength={120} placeholder="e.g. Main gate, Katpadi station exit" />
-      </label>
-      <label className="field"><span>Departure *</span>
-        <input type="datetime-local" required value={when} min={localNow()} onChange={(e) => setWhen(e.target.value)} />
-      </label>
-      {(info.carrierLabel || info.numberLabel) && (
-        <div className="grid2">
-          {info.carrierLabel && <label className="field"><span>{info.carrierLabel}</span>
-            <input value={carrier} onChange={(e) => setCarrier(e.target.value)} maxLength={60} /></label>}
-          {info.numberLabel && <label className="field"><span>{info.numberLabel}</span>
-            <input value={number} onChange={(e) => setNumber(e.target.value)} maxLength={30} /></label>}
+    <form onSubmit={submit} className="form post-form">
+      <header className="page-head">
+        <div>
+          <p className="eyebrow">New trip</p>
+          <h2>Post a trip</h2>
+          <p className="muted">Tell people where you are going and when. You choose who comes along.</p>
         </div>
-      )}
-      <div className="grid2">
-        <label className="field"><span>People you are looking for *</span>
-          <input type="number" min={1} max={20} required value={spots} onChange={(e) => setSpots(Number(e.target.value))} /></label>
-        <label className="field"><span>Cost split</span>
-          <input value={costNote} onChange={(e) => setCostNote(e.target.value)} maxLength={80} placeholder="e.g. Split equally, ~₹400 each" /></label>
-      </div>
-      <label className="field"><span>Notes</span>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={400} rows={3} /></label>
-      <div className="field"><span id="audience-label">Who can join *</span>
-        <Select<Audience>
-          value={audience}
-          onChange={setAudience}
-          labelledBy="audience-label"
-          options={AUDIENCES.map((a) => ({ value: a.id, label: a.label, disabled: !allowed(a.id) }))}
-        />
-        <small className="muted">Women-only and men-only trips are enforced by the server: nobody else can send a join request.</small>
-      </div>
-      <label className="check"><input type="checkbox" checked={luggage} onChange={(e) => setLuggage(e.target.checked)} /> Space for luggage</label>
+      </header>
+
+      <section className="panel">
+        <h3>How are you travelling?</h3>
+        <div className="chips wrap">
+          {MODES.map((m) => (
+            <button type="button" key={m.id} className={mode === m.id ? 'chip active' : 'chip'} onClick={() => setMode(m.id)}>
+              <ModeIcon id={m.id} /> {m.label}
+            </button>
+          ))}
+        </div>
+        {mode === 'other' && (
+          <label className="field"><span>How are you travelling? *</span>
+            <input value={modeLabel} onChange={(e) => setModeLabel(e.target.value)} maxLength={40} placeholder="e.g. Tempo traveller, rental car" />
+          </label>
+        )}
+        {(info.carrierLabel || info.numberLabel) && (
+          <div className="grid2">
+            {info.carrierLabel && <label className="field"><span>{info.carrierLabel}</span>
+              <input value={carrier} onChange={(e) => setCarrier(e.target.value)} maxLength={60} /></label>}
+            {info.numberLabel && <label className="field"><span>{info.numberLabel}</span>
+              <input value={number} onChange={(e) => setNumber(e.target.value)} maxLength={30} /></label>}
+          </div>
+        )}
+      </section>
+
+      <section className="panel">
+        <h3>Where and when</h3>
+        <PlaceInput label="From" value={origin} onChange={setOrigin} required />
+        <PlaceInput label="To" value={destination} onChange={setDestination} required />
+        <label className="field"><span>Meeting / pick-up spot</span>
+          <input value={pickupNote} onChange={(e) => setPickupNote(e.target.value)} maxLength={120} placeholder="e.g. Main gate, Katpadi station exit" />
+        </label>
+        <label className="field"><span>Departure *</span>
+          <input type="datetime-local" required value={when} min={localNow()} onChange={(e) => setWhen(e.target.value)} />
+        </label>
+      </section>
+
+      <section className="panel">
+        <h3>Who and how much</h3>
+        <div className="grid2">
+          <label className="field"><span>People you are looking for *</span>
+            <input type="number" min={1} max={20} required value={spots} onChange={(e) => setSpots(Number(e.target.value))} /></label>
+          <label className="field"><span>Cost split</span>
+            <input value={costNote} onChange={(e) => setCostNote(e.target.value)} maxLength={80} placeholder="e.g. Split equally, ~₹400 each" /></label>
+        </div>
+        <div className="field"><span id="audience-label">Who can join *</span>
+          <Select<Audience>
+            value={audience}
+            onChange={setAudience}
+            labelledBy="audience-label"
+            options={AUDIENCES.map((a) => ({ value: a.id, label: a.label, disabled: !allowed(a.id) }))}
+          />
+          <small className="muted">Women-only and men-only trips are enforced by the server: nobody else can send a join request.</small>
+        </div>
+        <label className="field"><span>Notes</span>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={400} rows={3} /></label>
+        <label className="switch">
+          <input type="checkbox" checked={luggage} onChange={(e) => setLuggage(e.target.checked)} />
+          <span className="track" aria-hidden="true" />
+          <span>Space for luggage</span>
+        </label>
+      </section>
+
       {error && <p className="error" role="alert">{error}</p>}
-      <button className="btn primary" disabled={busy}>{busy ? 'Posting…' : 'Post trip'}</button>
+      <button className="btn primary lg" disabled={busy}>{busy ? 'Posting…' : 'Post trip'}</button>
     </form>
   )
 }

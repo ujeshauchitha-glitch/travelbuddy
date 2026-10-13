@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Compass, CirclePlus, LifeBuoy, Luggage, MessageCircle, UserRound } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import ThemeToggle from './ThemeToggle'
+import { prettyName } from '../lib/names'
 
 const TABS = [
   { to: '/app', label: 'Trips', Icon: Compass, end: true },
@@ -26,9 +27,9 @@ export default function Layout() {
           ))}
         </nav>
         <span className="app-user">
-          <span className="muted small name">{profile?.displayName ?? user?.displayName}</span>
+          <span className="muted small name">{prettyName(profile?.displayName ?? user?.displayName)}</span>
           <ThemeToggle />
-          <Link to="/app/help" className="icon-btn" aria-label="Help and safety"><LifeBuoy size={20} aria-hidden="true" /></Link>
+          <Link to="/app/help" className="icon-btn" aria-label="Help and safety"><LifeBuoy size={18} aria-hidden="true" /></Link>
         </span>
       </header>
       <main className="app-main" key={pathname}><Outlet /></main>

@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext'
 import { AUDIENCES, DEFAULT_VISIBILITY, GENDERS, VISIBILITY_OPTIONS } from '../lib/modes'
 import type { Audience, ContactField, Gender, Visibility } from '../lib/types'
 import Select from '../components/Select'
+import { prettyName } from '../lib/names'
 
 const PHONE_RE = /^[+]?[0-9 ()-]{7,20}$/
 const IG_RE = /^[A-Za-z0-9._]{1,30}$/
@@ -14,7 +15,7 @@ export default function Profile() {
   const { user, profile, gender: savedGender, refreshProfile, logOut } = useAuth()
   const nav = useNavigate()
   const firstTime = !profile
-  const [name, setName] = useState(profile?.displayName ?? user?.displayName ?? '')
+  const [name, setName] = useState(prettyName(profile?.displayName ?? user?.displayName ?? ''))
   const [hometown, setHometown] = useState(profile?.hometown ?? '')
   const [bio, setBio] = useState(profile?.bio ?? '')
   const [phone, setPhone] = useState('')
