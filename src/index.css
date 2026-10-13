@@ -73,7 +73,7 @@
     --line: #5c4549;
     --edge: #0b0708;
     --edge-accent: #f4856f;
-    --scene-line: #0e0a0b;
+    --scene-line: #e8d5d1;
     --cloud: #5a3d4a;
     --sun-ring: #6b3a3c;
     --h1: #5a2a24;
@@ -111,7 +111,7 @@
   --line: #5c4549;
   --edge: #0b0708;
   --edge-accent: #f4856f;
-  --scene-line: #0e0a0b;
+  --scene-line: #e8d5d1;
   --cloud: #5a3d4a;
   --sun-ring: #6b3a3c;
   --h1: #5a2a24;
@@ -678,3 +678,41 @@ input:focus, textarea:focus, select:focus { box-shadow: 3px 3px 0 var(--edge-acc
 
 /* Dropdown opens upward when there is no room below (e.g. above the phone tab bar). */
 .select-list.up { top: auto; bottom: calc(100% + 6px); }
+
+/* =====================================================================
+   PEN SKETCH: ink lines on paper, hatching for shade, a little grain.
+   ===================================================================== */
+:root { --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.17 0 0 0 0 0.1 0 0 0 0 0.11 0 0 0 0.9 -0.28'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"); }
+:root[data-theme='dark'] { --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.93 0 0 0 0 0.84 0 0 0 0 0.82 0 0 0 0.9 -0.28'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.93 0 0 0 0 0.84 0 0 0 0 0.82 0 0 0 0.9 -0.28'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"); } }
+
+/* paper grain behind every page; cards and bars stay clean on top of it */
+.site, .app { position: relative; isolation: isolate; }
+.site::before, .app::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: var(--grain); background-size: 180px 180px; }
+.scene-grain { position: absolute; inset: 0; pointer-events: none; background-image: var(--grain); background-size: 180px 180px; }
+
+/* hand-drawn strokes */
+.ink { fill: none; stroke: var(--scene-line); stroke-width: 2.2px; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.ink.thin { stroke-width: 1.2px; opacity: 0.65; }
+.ink.faint { stroke-width: 1.4px; opacity: 0.55; }
+.ink.haze { stroke-width: 1px; opacity: 0.25; }
+.ink.star-marks { stroke-width: 1.2px; opacity: calc(var(--star) * 0.85); }
+.cloud path.ink { fill: var(--cloud); }
+.hatch-line { stroke: var(--scene-line); stroke-width: 1px; opacity: 0.4; }
+.hatch-fade { opacity: 0.75; }
+.plane path { stroke: var(--scene-line); stroke-width: 1px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.road-dash { stroke: var(--scene-line); stroke-opacity: 0.55; stroke-width: 2px; }
+.plane-trail { stroke-opacity: 0.6; stroke-width: 1.6px; stroke-linecap: round; }
+
+/* sketch tuning: lighter grain, and the intro line sits on a paper note so hatching never touches the text */
+.scene-grain { opacity: 0.45; }
+.site::before, .app::before { opacity: 0.7; }
+.scene-copy .lede { display: inline-block; padding: 10px 16px; background: var(--surface); color: var(--text); border: 1.5px solid var(--line); border-radius: 14px; box-shadow: 3px 3px 0 var(--edge); }
+
+/* keep nav buttons on one line; tighten the pill on small phones */
+.btn { white-space: nowrap; }
+@media (max-width: 420px) {
+  .site-nav { gap: 8px; padding: 8px 10px 8px 14px; }
+  .site-nav .brand { font-size: 1.1rem; }
+  .site-nav-actions { gap: 6px; }
+}
