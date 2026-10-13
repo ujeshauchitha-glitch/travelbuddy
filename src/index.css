@@ -802,3 +802,9 @@ html.tt-cursor input:not([type='checkbox']):not([type='radio']), html.tt-cursor 
   .app-nav a[href='/app/post']:active { transform: scale(0.92); }
   .app-nav a[href='/app/post'] svg { width: 26px; height: 26px; }
 }
+
+/* ---- the page as paper: creases under the pointer, writing with press-and-hold ---- */
+.paper-creases, .paper-ink { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; }
+.paper-creases { z-index: -1; }
+.paper-ink { z-index: 296; }
+html.tt-inking, html.tt-inking * { user-select: none !important; -webkit-user-select: none !important; }

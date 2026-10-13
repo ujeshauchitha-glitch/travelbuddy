@@ -18,6 +18,7 @@ import { PrefsProvider } from './lib/PrefsContext'
 import { ToastProvider } from './components/Toast'
 import Customize from './components/Customize'
 import Cursor from './components/Cursor'
+import PaperFx from './components/PaperFx'
 
 /** Scrolls to the top on page changes, or to the #section when the link has one. */
 function ScrollManager() {
@@ -82,6 +83,7 @@ export default function App() {
         </Routes>
         <Customize />
         <Cursor />
+        <PaperFx />
       </AuthProvider>
     </BrowserRouter>
     </ToastProvider>
