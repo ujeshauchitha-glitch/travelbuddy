@@ -2,13 +2,13 @@
    is used only behind the landing hero so the app itself stays calm. */
 :root {
   --bg: #fdeeed;
-  --surface: #ffffff;
+  --surface: #fff6f5;
   --tint: #f9e1e0;
   --text: #26181a;
   --muted: #6f5f60;
   --border: #f0d8d6;
   --ink: #26181a;
-  --ink-text: #ffffff;
+  --ink-text: #fff6f5;
   --soft: #f8e3e1;
   --accent: #c8523f;
   --ok: #2e7d52;
@@ -42,10 +42,10 @@
     --bg: #211719;
     --surface: #2c2123;
     --tint: #291e21;
-    --text: #f6ece8;
+    --text: #eddedb;
     --muted: #b3a29d;
     --border: #44343a;
-    --ink: #f6ece8;
+    --ink: #e8d3cf;
     --ink-text: #211719;
     --soft: #37292d;
     --accent: #ff9a85;
@@ -74,10 +74,10 @@
   --bg: #211719;
   --surface: #2c2123;
   --tint: #291e21;
-  --text: #f6ece8;
+  --text: #eddedb;
   --muted: #b3a29d;
   --border: #44343a;
-  --ink: #f6ece8;
+  --ink: #e8d3cf;
   --ink-text: #211719;
   --soft: #37292d;
   --accent: #ff9a85;
@@ -429,13 +429,13 @@ a.card:hover { transform: translateY(-3px); }
 
 /* ================= floating panels ================= */
 :root {
-  --float-bg: #fffaf8;
+  --float-bg: #fff3f1;
   --float-text: #26181a;
   --lift: 0 28px 60px rgba(70, 35, 25, 0.16), 0 3px 8px rgba(70, 35, 25, 0.06);
 }
-:root[data-theme='dark'] { --float-bg: #f4ede8; --lift: 0 28px 60px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.3); }
+:root[data-theme='dark'] { --float-bg: #e8d5d1; --lift: 0 28px 60px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.3); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) { --float-bg: #f4ede8; --lift: 0 28px 60px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.3); }
+  :root:not([data-theme='light']) { --float-bg: #e8d5d1; --lift: 0 28px 60px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.3); }
 }
 
 /* Benefits strip: a card inset from the edges, not a full-width band. */
@@ -450,6 +450,6 @@ a.card:hover { transform: translateY(-3px); }
 .cta-inner { max-width: 1040px; margin: 0 auto; background: var(--float-bg); color: var(--float-text); border-radius: 28px; padding: 64px 24px; box-shadow: var(--lift); }
 .cta p { color: var(--float-text); opacity: 0.75; }
 .cta code { background: rgba(38, 24, 26, 0.08); color: inherit; }
-.cta .btn.primary { background: #26181a; border-color: #26181a; color: #ffffff; }
+.cta .btn.primary { background: #26181a; border-color: #26181a; color: #fff3f1; }
 .tint-block { box-shadow: var(--lift); border: 1px solid var(--border); }
 @media (min-width: 760px) { .pillars { padding: 40px 36px; } .section.tint { padding: 64px 48px; } .cta-inner { padding: 80px 24px; } }
