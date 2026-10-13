@@ -14,6 +14,9 @@ import Profile from './pages/Profile'
 import Chats from './pages/Chats'
 import Chat from './pages/Chat'
 import Help from './pages/Help'
+import { PrefsProvider } from './lib/PrefsContext'
+import { ToastProvider } from './components/Toast'
+import Customize from './components/Customize'
 
 /** Scrolls to the top on page changes, or to the #section when the link has one. */
 function ScrollManager() {
@@ -65,6 +68,8 @@ function AppArea() {
 export default function App() {
   if (!firebaseConfigured) return <SetupNeeded />
   return (
+    <PrefsProvider>
+    <ToastProvider>
     <BrowserRouter>
       <AuthProvider>
         <ScrollManager />
@@ -74,7 +79,10 @@ export default function App() {
           <Route path="/app/*" element={<AppArea />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Customize />
       </AuthProvider>
     </BrowserRouter>
+    </ToastProvider>
+    </PrefsProvider>
   )
 }

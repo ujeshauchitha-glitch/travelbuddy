@@ -9,6 +9,9 @@ import type { Audience, Place, TravelMode } from '../lib/types'
 import PlaceInput from '../components/PlaceInput'
 import ModeIcon from '../components/ModeIcon'
 import Select from '../components/Select'
+import Stepper from '../components/Stepper'
+import StatusButton from '../components/StatusButton'
+import { useToast } from '../components/Toast'
 
 const localNow = () => {
   const d = new Date(Date.now() + 3600_000)
@@ -19,6 +22,7 @@ const localNow = () => {
 export default function PostTrip() {
   const { user, profile, gender } = useAuth()
   const nav = useNavigate()
+  const toast = useToast()
   const [mode, setMode] = useState<TravelMode>('cab')
   const [modeLabel, setModeLabel] = useState('')
   const [origin, setOrigin] = useState<Place>({ name: '' })
@@ -69,6 +73,7 @@ export default function PostTrip() {
         createdAt: serverTimestamp(),
       }).filter(([, v]) => v !== undefined))
       const ref = await addDoc(collection(db, 'trips'), data)
+      toast('Trip posted')
       nav(`/app/trip/${ref.id}`)
     } catch {
       setError('Could not post the trip. Check your connection and try again.')
@@ -125,8 +130,8 @@ export default function PostTrip() {
       <section className="panel">
         <h3>Who and how much</h3>
         <div className="grid2">
-          <label className="field"><span>People you are looking for *</span>
-            <input type="number" min={1} max={20} required value={spots} onChange={(e) => setSpots(Number(e.target.value))} /></label>
+          <div className="field"><span id="spots-label">People you are looking for *</span>
+            <Stepper value={spots} min={1} max={20} onChange={setSpots} label="people" /></div>
           <label className="field"><span>Cost split</span>
             <input value={costNote} onChange={(e) => setCostNote(e.target.value)} maxLength={80} placeholder="e.g. Split equally, ~₹400 each" /></label>
         </div>
@@ -149,7 +154,7 @@ export default function PostTrip() {
       </section>
 
       {error && <p className="error" role="alert">{error}</p>}
-      <button className="btn primary lg" disabled={busy}>{busy ? 'Posting…' : 'Post trip'}</button>
+      <StatusButton className="btn primary lg" busy={busy} busyLabel="Posting…">Post trip</StatusButton>
     </form>
   )
 }

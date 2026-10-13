@@ -8,6 +8,7 @@ import { SiteFooter, SiteNav } from '../components/SiteChrome'
 import ModeStamp from '../components/art/ModeStamp'
 import Travellers from '../components/art/Travellers'
 import type { TravelMode } from '../lib/types'
+import { DoodleArrow, DoodleSpark, DoodleSquiggle, DoodleStar } from '../components/art/Doodles'
 
 const STEPS = [
   { n: '01', title: 'Post or find a trip',
@@ -122,6 +123,7 @@ export default function Landing() {
               <img className="sc sc4" src="/art/stamp-bus.webp" width={355} height={360} alt="Illustrated postage stamp of a bus below the mountains" />
             </div>
             <span className="tape t1" aria-hidden="true" /><span className="tape t2" aria-hidden="true" />
+            <DoodleArrow /><DoodleStar /><DoodleSquiggle /><DoodleSpark />
             <figure className="ticket-float" aria-label="Example of a trip ticket">
               <figcaption className="mono">Example</figcaption>
               <p className="tf-route"><strong>VIT</strong><span aria-hidden="true">→</span><strong>Chennai</strong></p>

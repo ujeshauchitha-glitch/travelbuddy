@@ -1,7 +1,8 @@
 import { Fragment, createElement, useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 
-export const prefersReducedMotion = () =>
-  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+import { prefersReducedMotion } from './prefs'
+// eslint-disable-next-line react-refresh/only-export-components
+export { prefersReducedMotion }
 
 /** Fades and lifts its children in the first time they scroll into view. */
 export function Reveal({

@@ -6,8 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Travel Tinder</title>
     <script>
-      // Apply the saved theme before first paint to avoid a light flash.
-      try { var t = localStorage.getItem('tb-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+      // Apply saved look-and-feel before first paint, so there is no flash of the default.
+      try {
+        var r = document.documentElement, p = JSON.parse(localStorage.getItem('tt-prefs') || 'null');
+        if (p) {
+          var map = { palette: 'palette', texture: 'texture', edge: 'edge', line: 'line', corners: 'corners', density: 'density', size: 'fs', motion: 'motion', art: 'art' };
+          for (var k in map) if (typeof p[k] === 'string') r.setAttribute('data-' + map[k], p[k]);
+          if (typeof p.doodles === 'boolean') r.setAttribute('data-doodles', p.doodles ? 'on' : 'off');
+          if (p.theme === 'light' || p.theme === 'dark') r.setAttribute('data-theme', p.theme);
+        } else {
+          var t = localStorage.getItem('tb-theme');
+          if (t === 'light' || t === 'dark') r.setAttribute('data-theme', t);
+        }
+      } catch (e) {}
     </script>
   </head>
   <body>

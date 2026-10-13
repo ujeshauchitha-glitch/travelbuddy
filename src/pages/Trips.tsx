@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { collection, limit, onSnapshot, orderBy, query, Timestamp, where } from 'firebase/firestore'
 import { Compass, Plus, Search } from 'lucide-react'
@@ -20,6 +20,18 @@ export default function Trips() {
   const [params] = useSearchParams()
   const [text, setText] = useState(params.get('q') ?? '')
   const first = prettyName(profile?.displayName).split(' ')[0]
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  // Press "/" anywhere on the page to jump to the search box.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null
+      const typing = !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
+      if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey) { e.preventDefault(); searchRef.current?.focus() }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -59,8 +71,9 @@ export default function Trips() {
 
       <div className="search-wrap">
         <Search size={18} aria-hidden="true" />
-        <input className="search" aria-label="Search trips" placeholder="Search a place, flight or train number, or a name"
+        <input ref={searchRef} className="search" aria-label="Search trips" placeholder="Search a place, flight or train number, or a name"
           value={text} onChange={(e) => setText(e.target.value)} />
+        <kbd className="kbd" aria-hidden="true">/</kbd>
       </div>
 
       <div className="chips">

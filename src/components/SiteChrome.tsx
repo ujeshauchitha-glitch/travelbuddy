@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import ThemeToggle from './ThemeToggle'
+import CustomizeButton from './CustomizeButton'
 
 const LINKS = [
   { to: '/#how', label: 'How it works' },
@@ -47,6 +48,7 @@ export function SiteNav() {
           {LINKS.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
         </nav>
         <div className="site-nav-actions auth-cta">
+          <CustomizeButton />
           <ThemeToggle />
           {user
             ? <Link to="/app" className="btn primary sm">Open app</Link>

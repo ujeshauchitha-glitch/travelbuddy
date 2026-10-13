@@ -5,6 +5,8 @@ import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import type { Issue, IssueCategory } from '../lib/types'
 import Select from '../components/Select'
+import StatusButton from '../components/StatusButton'
+import { useToast } from '../components/Toast'
 
 const CATEGORIES: { id: IssueCategory; label: string }[] = [
   { id: 'safety', label: 'Safety concern or report a person/trip' },
@@ -36,6 +38,7 @@ export default function Help() {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
+  const toast = useToast()
   const [error, setError] = useState('')
   const [mine, setMine] = useState<Issue[]>([])
 
@@ -57,6 +60,8 @@ export default function Help() {
         createdAt: serverTimestamp(),
       })
       setText(''); setDone(true)
+      toast('Thanks, we received it')
+      setTimeout(() => setDone(false), 1800)
     } catch {
       setError('Could not send. Please try again.')
     }
@@ -104,8 +109,7 @@ export default function Help() {
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={2000} required
             placeholder="What happened? Include names, places and times if you can." /></label>
         {error && <p className="error" role="alert">{error}</p>}
-        {done && <p className="ok" role="status">Thanks, we received it.</p>}
-        <button className="btn primary" disabled={busy || !text.trim()}>{busy ? 'Sending…' : 'Send'}</button>
+        <StatusButton busy={busy} done={done} disabled={!text.trim()} busyLabel="Sending…" doneLabel="Sent">Send</StatusButton>
       </form>
 
       {mine.length > 0 && (

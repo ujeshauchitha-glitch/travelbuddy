@@ -6,6 +6,8 @@ import { useAuth } from '../auth/AuthContext'
 import { AUDIENCES, DEFAULT_VISIBILITY, GENDERS, VISIBILITY_OPTIONS } from '../lib/modes'
 import type { Audience, ContactField, Gender, Visibility } from '../lib/types'
 import Select from '../components/Select'
+import StatusButton from '../components/StatusButton'
+import { useToast } from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { deleteAccount } from '../lib/deleteAccount'
 import { prettyName } from '../lib/names'
@@ -29,7 +31,8 @@ export default function Profile() {
     ...(profile?.contactVisibility ?? {}),
   })
   const [busy, setBusy] = useState(false)
-  const [msg, setMsg] = useState('')
+  const toast = useToast()
+  const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -51,7 +54,7 @@ export default function Profile() {
 
   const save = async (e: FormEvent) => {
     e.preventDefault()
-    setError(''); setMsg('')
+    setError('')
     const ig = instagram.trim().replace(/^@/, '')
     const ph = phone.trim()
     if (!name.trim()) return setError('Name is required.')
@@ -81,7 +84,9 @@ export default function Profile() {
       await b.commit()
       if (!ig) await deleteDoc(doc(db, 'profiles', uid, 'private', 'instagram'))
       await refreshProfile()
-      setMsg('Saved.')
+      toast('Profile saved')
+      setSaved(true)
+      setTimeout(() => setSaved(false), 1800)
       if (firstTime) nav('/app')
     } catch {
       setError('Could not save your profile. Try again.')
@@ -185,8 +190,7 @@ export default function Profile() {
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
-      {msg && <p className="ok" role="status">{msg}</p>}
-      <button className="btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button>
+      <StatusButton busy={busy} done={saved} busyLabel="Saving…" doneLabel="Saved">Save</StatusButton>
       <button type="button" className="btn" onClick={logOut}>Log out</button>
     </form>
 

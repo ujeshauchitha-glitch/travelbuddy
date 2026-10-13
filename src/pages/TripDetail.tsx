@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ShieldCheck } from 'lucide-react'
+import { Check, Share2, ShieldCheck } from 'lucide-react'
 import {
   arrayUnion, collection, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc, writeBatch,
 } from 'firebase/firestore'
@@ -12,6 +12,7 @@ import { fmtWhen } from '../components/TripCard'
 import ModeIcon from '../components/ModeIcon'
 import RouteVisual from '../components/RouteVisual'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { useToast } from '../components/Toast'
 import { initials, prettyName } from '../lib/names'
 
 // Reads one field. The server decides whether we are allowed.
@@ -47,6 +48,8 @@ export default function TripDetail() {
   const { id } = useParams()
   const { user, profile, gender } = useAuth()
   const nav = useNavigate()
+  const toast = useToast()
+  const [copied, setCopied] = useState(false)
   const [trip, setTrip] = useState<Trip | null | undefined>(undefined)
   const [requests, setRequests] = useState<JoinRequest[]>([])
   const [mine, setMine] = useState<JoinRequest | null>(null)
@@ -91,12 +94,29 @@ export default function TripDetail() {
     }
   }
 
-  const requestJoin = () => run(() =>
-    setDoc(doc(db, 'trips', trip.id, 'requests', user!.uid), {
+  const requestJoin = () => run(async () => {
+    await setDoc(doc(db, 'trips', trip.id, 'requests', user!.uid), {
       status: 'pending', displayName: profile?.displayName ?? 'Student', createdAt: serverTimestamp(),
-    }))
+    })
+    toast('Request sent. The host will see it.')
+  })
 
-  const cancelRequest = () => run(() => deleteDoc(doc(db, 'trips', trip.id, 'requests', user!.uid)))
+  const cancelRequest = () => run(async () => {
+    await deleteDoc(doc(db, 'trips', trip.id, 'requests', user!.uid))
+    toast('Request withdrawn', 'info')
+  })
+
+  // Share sheet on phones, copied link everywhere else.
+  const share = async () => {
+    const url = `${location.origin}/app/trip/${trip.id}`
+    const title = `${trip.origin.name} to ${trip.destination.name}`
+    try {
+      if (navigator.share) await navigator.share({ title, text: `Join me on this trip: ${title}`, url })
+      else { await navigator.clipboard.writeText(url); toast('Trip link copied') }
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch { /* the person closed the share sheet */ }
+  }
 
   const decide = (r: JoinRequest, status: 'accepted' | 'declined') => run(async () => {
     const reqRef = doc(db, 'trips', trip.id, 'requests', r.uid)
@@ -148,7 +168,10 @@ export default function TripDetail() {
         </ul>
         {trip.notes && <p className="muted">{trip.notes}</p>}
         <p className="host small"><span className="avatar" aria-hidden="true">{initials(trip.hostName)}</span> Hosted by {prettyName(trip.hostName)}</p>
-        {!isHost && <Link className="small" to={`/app/help?category=safety&trip=${trip.id}`}>Report this trip</Link>}
+        <button type="button" className={copied ? 'btn sm share-btn is-done' : 'btn sm share-btn'} onClick={share}>
+          {copied ? <Check size={15} aria-hidden="true" className="pop" /> : <Share2 size={15} aria-hidden="true" />} {copied ? 'Shared' : 'Share this trip'}
+        </button>
+        {!isHost && <Link className="small report-link" to={`/app/help?category=safety&trip=${trip.id}`}>Report this trip</Link>}
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
