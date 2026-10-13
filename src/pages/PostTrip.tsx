@@ -7,6 +7,7 @@ import { AUDIENCES, MODES, modeInfo } from '../lib/modes'
 import { samePlace } from '../lib/places'
 import type { Audience, Place, TravelMode } from '../lib/types'
 import PlaceInput from '../components/PlaceInput'
+import ModeIcon from '../components/ModeIcon'
 
 const localNow = () => {
   const d = new Date(Date.now() + 3600_000)
@@ -80,7 +81,7 @@ export default function PostTrip() {
       <div className="chips">
         {MODES.map((m) => (
           <button type="button" key={m.id} className={mode === m.id ? 'chip active' : 'chip'} onClick={() => setMode(m.id)}>
-            {m.icon} {m.label}
+            <ModeIcon id={m.id} /> {m.label}
           </button>
         ))}
       </div>

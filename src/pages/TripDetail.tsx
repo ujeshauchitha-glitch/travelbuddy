@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
 import {
   arrayUnion, collection, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc, writeBatch,
 } from 'firebase/firestore'
@@ -8,6 +9,7 @@ import { useAuth } from '../auth/AuthContext'
 import { audienceBadge, canJoinAudience, convId, modeInfo } from '../lib/modes'
 import type { ContactField, JoinRequest, Trip } from '../lib/types'
 import { fmtWhen } from '../components/TripCard'
+import ModeIcon from '../components/ModeIcon'
 
 // Reads one field. The server decides whether we are allowed.
 function ContactRow({ uid, field, label }: { uid: string; field: ContactField; label: string }) {
@@ -113,8 +115,8 @@ export default function TripDetail() {
     <>
       <div className="card">
         <div className="row">
-          <span className="chip">{m.icon} {label}{trip.number ? ` · ${trip.number}` : ''}</span>
-          {badge && <span className="chip safe">{badge}</span>}
+          <span className="chip"><ModeIcon id={m.id} /> {label}{trip.number ? ` · ${trip.number}` : ''}</span>
+          {badge && <span className="chip safe"><ShieldCheck size={14} aria-hidden="true" /> {badge}</span>}
         </div>
         <h2>{trip.origin.name} → {trip.destination.name}</h2>
         <p>{fmtWhen(trip)}</p>

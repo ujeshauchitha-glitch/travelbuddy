@@ -5,6 +5,7 @@ import { MODES, canJoinAudience } from '../lib/modes'
 import { useAuth } from '../auth/AuthContext'
 import type { Trip, TravelMode } from '../lib/types'
 import TripCard from '../components/TripCard'
+import ModeIcon from '../components/ModeIcon'
 
 export default function Trips() {
   const { gender } = useAuth()
@@ -49,7 +50,7 @@ export default function Trips() {
         <button className={!mode ? 'chip active' : 'chip'} onClick={() => setMode('')}>All</button>
         {MODES.map((m) => (
           <button key={m.id} className={mode === m.id ? 'chip active' : 'chip'} onClick={() => setMode(m.id)}>
-            {m.icon} {m.label}
+            <ModeIcon id={m.id} /> {m.label}
           </button>
         ))}
       </div>
@@ -59,7 +60,7 @@ export default function Trips() {
         <div className="empty card">
           <p>No trips here yet. Be the first to post one.</p>
         </div>
-      ) : shown.map((t) => <TripCard key={t.id} trip={t} />)}
+      ) : <div className="trip-grid">{shown.map((t) => <TripCard key={t.id} trip={t} />)}</div>}
     </>
   )
 }

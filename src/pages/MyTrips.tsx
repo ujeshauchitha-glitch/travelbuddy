@@ -23,7 +23,7 @@ export default function MyTrips() {
       <h2>My trips</h2>
       {loading ? <p className="muted">Loading…</p> : trips.length === 0
         ? <div className="card empty"><p>You have not hosted or joined any trips yet.</p></div>
-        : trips.map((t) => <TripCard key={t.id} trip={t} />)}
+        : <div className="trip-grid">{trips.map((t) => <TripCard key={t.id} trip={t} />)}</div>}
     </>
   )
 }

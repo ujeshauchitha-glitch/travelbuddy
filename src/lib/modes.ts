@@ -1,15 +1,15 @@
 import type { Audience, ContactField, Gender, TravelMode, Visibility } from './types'
 
-export const MODES: { id: TravelMode; label: string; icon: string; numberLabel?: string; carrierLabel?: string }[] = [
-  { id: 'cab', label: 'Cab', icon: '🚕' },
-  { id: 'train', label: 'Train', icon: '🚆', numberLabel: 'Train no. / name', carrierLabel: 'Class (optional)' },
-  { id: 'flight', label: 'Flight', icon: '✈️', numberLabel: 'Flight no.', carrierLabel: 'Airline' },
-  { id: 'bus', label: 'Bus', icon: '🚌', numberLabel: 'Bus no. (optional)', carrierLabel: 'Operator' },
-  { id: 'auto', label: 'Auto', icon: '🛺' },
-  { id: 'metro', label: 'Metro', icon: '🚇' },
-  { id: 'ferry', label: 'Ferry', icon: '⛴️' },
-  { id: 'bike', label: 'Bike', icon: '🏍️' },
-  { id: 'other', label: 'Other', icon: '🧭' },
+export const MODES: { id: TravelMode; label: string; numberLabel?: string; carrierLabel?: string }[] = [
+  { id: 'cab', label: 'Cab' },
+  { id: 'train', label: 'Train', numberLabel: 'Train no. / name', carrierLabel: 'Class (optional)' },
+  { id: 'flight', label: 'Flight', numberLabel: 'Flight no.', carrierLabel: 'Airline' },
+  { id: 'bus', label: 'Bus', numberLabel: 'Bus no. (optional)', carrierLabel: 'Operator' },
+  { id: 'auto', label: 'Auto' },
+  { id: 'metro', label: 'Metro' },
+  { id: 'ferry', label: 'Ferry' },
+  { id: 'bike', label: 'Bike' },
+  { id: 'other', label: 'Other' },
 ]
 
 export const modeInfo = (id: TravelMode) => MODES.find((m) => m.id === id) ?? MODES[MODES.length - 1]
@@ -36,8 +36,8 @@ export const GENDERS: { id: Gender; label: string }[] = [
 
 export const AUDIENCES: { id: Audience; label: string; badge?: string }[] = [
   { id: 'anyone', label: 'Anyone on campus' },
-  { id: 'women_only', label: 'Women only', badge: '♀ Women only' },
-  { id: 'men_only', label: 'Men only', badge: '♂ Men only' },
+  { id: 'women_only', label: 'Women only', badge: 'Women only' },
+  { id: 'men_only', label: 'Men only', badge: 'Men only' },
 ]
 
 export const audienceBadge = (a?: Audience) => AUDIENCES.find((x) => x.id === a)?.badge

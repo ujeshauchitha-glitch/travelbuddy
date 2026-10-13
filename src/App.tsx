@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { firebaseConfigured } from './lib/firebase'
 import Layout from './components/Layout'
-import Login from './pages/Login'
+import Landing from './pages/Landing'
 import SetupNeeded from './pages/SetupNeeded'
 import Trips from './pages/Trips'
 import PostTrip from './pages/PostTrip'
@@ -16,7 +16,7 @@ import Help from './pages/Help'
 function Gate() {
   const { user, profile, gender, loading } = useAuth()
   if (loading) return <div className="center"><p className="muted">Loading…</p></div>
-  if (!user) return <Login />
+  if (!user) return <Landing />
   // Phone and gender are required before anything else, so safety filters work.
   if (!profile || !gender) {
     return (

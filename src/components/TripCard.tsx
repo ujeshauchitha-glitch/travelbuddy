@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
+import ModeIcon from './ModeIcon'
 import { audienceBadge, modeInfo } from '../lib/modes'
 import type { Trip } from '../lib/types'
 
@@ -12,8 +14,8 @@ export default function TripCard({ trip }: { trip: Trip }) {
   return (
     <Link to={`/trip/${trip.id}`} className="card trip">
       <div className="row between">
-        <span className="chip">{m.icon} {label}{trip.number ? ` · ${trip.number}` : ''}</span>
-        {audienceBadge(trip.audience) && <span className="chip safe">{audienceBadge(trip.audience)}</span>}
+        <span className="chip"><ModeIcon id={m.id} /> {label}{trip.number ? ` · ${trip.number}` : ''}</span>
+        {audienceBadge(trip.audience) && <span className="chip safe"><ShieldCheck size={14} aria-hidden="true" /> {audienceBadge(trip.audience)}</span>}
         <span className={left ? 'chip ok' : 'chip'}>{left ? `${left} spot${left > 1 ? 's' : ''} open` : 'Full'}</span>
       </div>
       <div className="route">

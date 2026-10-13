@@ -1,25 +1,34 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Compass, CirclePlus, LifeBuoy, Luggage, MessageCircle, UserRound } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
+
+const TABS = [
+  { to: '/', label: 'Trips', Icon: Compass, end: true },
+  { to: '/post', label: 'Post', Icon: CirclePlus },
+  { to: '/chats', label: 'Chats', Icon: MessageCircle },
+  { to: '/mine', label: 'My trips', Icon: Luggage },
+  { to: '/profile', label: 'Profile', Icon: UserRound },
+]
 
 export default function Layout() {
   const { profile, user } = useAuth()
   return (
-    <div className="shell">
-      <header className="topbar">
-        <span className="brand">TravelBuddy</span>
-        <span className="row">
-          <span className="muted small">{profile?.displayName ?? user?.displayName}</span>
-          <Link to="/help" className="chip" aria-label="Help and safety">Help</Link>
+    <div className="app">
+      <header className="app-bar">
+        <Link to="/" className="brand">TravelBuddy</Link>
+        <nav className="app-nav" aria-label="Main">
+          {TABS.map(({ to, label, Icon, end }) => (
+            <NavLink key={to} to={to} end={end}>
+              <Icon size={20} aria-hidden="true" /><span>{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+        <span className="app-user">
+          <span className="muted small name">{profile?.displayName ?? user?.displayName}</span>
+          <Link to="/help" className="icon-btn" aria-label="Help and safety"><LifeBuoy size={20} aria-hidden="true" /></Link>
         </span>
       </header>
-      <main className="content"><Outlet /></main>
-      <nav className="tabbar" aria-label="Main">
-        <NavLink to="/" end>Trips</NavLink>
-        <NavLink to="/post">Post</NavLink>
-        <NavLink to="/chats">Chats</NavLink>
-        <NavLink to="/mine">My trips</NavLink>
-        <NavLink to="/profile">Profile</NavLink>
-      </nav>
+      <main className="app-main"><Outlet /></main>
     </div>
   )
 }
