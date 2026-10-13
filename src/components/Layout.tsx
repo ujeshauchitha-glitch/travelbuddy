@@ -6,7 +6,7 @@ export default function Layout() {
   return (
     <div className="shell">
       <header className="topbar">
-        <span className="brand">🧭 TravelBuddy</span>
+        <span className="brand">TravelBuddy</span>
         <span className="row">
           <span className="muted small">{profile?.displayName ?? user?.displayName}</span>
           <Link to="/help" className="chip" aria-label="Help and safety">Help</Link>
