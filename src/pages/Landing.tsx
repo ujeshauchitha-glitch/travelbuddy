@@ -1,20 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Coins, Handshake, Lock, MessageCircle, Route, ShieldCheck, Users } from 'lucide-react'
+import { ArrowRight, BadgeCheck, Handshake, Lock, MessageCircle, ShieldCheck, Users } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { CAMPUS_DOMAIN } from '../lib/firebase'
-import { MODES } from '../lib/modes'
-import { Reveal, WordReveal, useScrollProgress, useScrollVars } from '../lib/motion'
-import ModeIcon from '../components/ModeIcon'
+import { Reveal, WordReveal } from '../lib/motion'
 import { SiteFooter, SiteNav } from '../components/SiteChrome'
-import HeroScene from '../components/HeroScene'
+import TrainPostcard from '../components/art/TrainPostcard'
+import ModeArt from '../components/art/ModeArt'
+import Travellers from '../components/art/Travellers'
+import type { TravelMode } from '../lib/types'
 
 const STEPS = [
-  { title: 'Post or find a trip',
-    text: 'Going to the airport, the station, home for the holidays, or somewhere new? Post where and when, or browse trips already planned. Any place works, not only big cities.' },
-  { title: 'Ask, then request to join',
+  { n: '01', title: 'Post or find a trip',
+    text: 'Going to the airport, the station, home for the holidays, or somewhere new? Post where and when, or browse trips already planned. Any place works.' },
+  { n: '02', title: 'Ask, then request to join',
     text: 'Message the host privately to check the plan. When you are ready, send a join request. The host decides who comes along.' },
-  { title: 'Share details, then go',
+  { n: '03', title: 'Share details, then go',
     text: 'Once you are accepted, the contact details each person chose to share with travel mates unlock. Everything else stays hidden.' },
 ]
 
@@ -22,9 +23,9 @@ const SAFETY = [
   { icon: ShieldCheck, title: 'Only verified VIT students',
     text: `Sign-in needs a Google account ending in @${CAMPUS_DOMAIN}. The server checks this, not just the page.` },
   { icon: Lock, title: 'You control each detail',
-    text: 'Phone, email, Instagram and gender each have their own setting: everyone on campus, only travel mates, or only you. Instagram is optional.' },
+    text: 'Phone, email, Instagram and gender each have their own setting: everyone on campus, only travel mates, or only you.' },
   { icon: Users, title: 'Women-only and men-only trips',
-    text: 'Hosts can restrict a trip. The server then rejects join requests from anyone else. Gender is self-declared, so treat it as a strong filter, not proof of identity.' },
+    text: 'Hosts can restrict a trip, and the server rejects other join requests. Gender is self-declared, so treat it as a strong filter, not proof.' },
   { icon: MessageCircle, title: 'Block and report, always',
     text: 'Chats start only from a trip. You can block anyone, and report a person or trip to the project owner in two taps.' },
 ]
@@ -42,27 +43,21 @@ const FAQ = [
     a: 'Block the person, report them from the chat or the trip, and call 112 in an emergency. Reports are visible only to you and the project owner.' },
 ]
 
-const OCCASIONS = [
-  'Airport runs', 'Station drops', 'Home for the holidays', 'Weekend getaways', 'Internship commutes',
-  'Late-night arrivals', 'Hometown trips', 'Group outings', 'Anywhere else',
+// Places people commonly plan trips from campus. These are search shortcuts, not live listings.
+const ROUTES: { title: string; code: string; mode: TravelMode; q: string; note: string }[] = [
+  { title: 'Chennai Airport', code: 'MAA', mode: 'flight', q: 'Chennai', note: 'Flights' },
+  { title: 'Bengaluru Airport', code: 'BLR', mode: 'flight', q: 'Bengaluru', note: 'Flights' },
+  { title: 'Katpadi Junction', code: 'KPD', mode: 'train', q: 'Katpadi', note: 'Trains' },
+  { title: 'Chennai Central', code: 'MAS', mode: 'train', q: 'Chennai Central', note: 'Trains' },
 ]
-
-/** An endlessly scrolling row. The second copy is hidden from screen readers. */
-function Marquee({ children, reverse = false }: { children: React.ReactNode; reverse?: boolean }) {
-  return (
-    <div className={reverse ? 'marquee reverse' : 'marquee'}>
-      <div className="marquee-track">
-        <ul>{children}</ul>
-        <ul aria-hidden="true" className="dup">{children}</ul>
-      </div>
-    </div>
-  )
-}
 
 export default function Landing() {
   const { signIn, error, user, profile, loading } = useAuth()
   const nav = useNavigate()
   const root = useRef<HTMLDivElement>(null)
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+
   // After a fresh sign-in on this page, continue into the app. A returning
   // visitor with a saved session stays on the home page.
   const wasSignedOut = useRef<boolean | null>(null)
@@ -72,104 +67,122 @@ export default function Landing() {
     wasSignedOut.current = !user
   }, [user, loading, nav])
   const first = (profile?.displayName ?? user?.displayName ?? '').split(' ')[0]
-  const stepsRef = useRef<HTMLOListElement>(null)
-  const [reached, setReached] = useState(0)
-  useScrollVars(root)
-  useScrollProgress(stepsRef, STEPS.length, setReached)
+
+  const go = (q: string) => {
+    if (user) nav(q ? `/app?q=${encodeURIComponent(q)}` : '/app')
+    else signIn()
+  }
+  const onFind = (e: FormEvent) => { e.preventDefault(); go(`${from} ${to}`.trim()) }
 
   return (
     <div className="site" ref={root} data-auth={loading ? 'pending' : 'ready'}>
       <SiteNav />
 
       <main id="top">
-        <HeroScene
-          a={
-            <>
-              <p className="eyebrow rise" style={{ '--d': '0ms' } as React.CSSProperties}>{user && first ? `Welcome back, ${first}` : 'For VIT students'}</p>
-              <h1 aria-label="Don’t travel alone. Don’t overpay."><WordReveal text="Don’t travel alone. Don’t overpay." /></h1>
-              <p className="lede rise" style={{ '--d': '420ms' } as React.CSSProperties}>
-                Find students heading your way, by cab, train, flight or anything else. Split the cost,
-                share the ride, and know who you are travelling with.
-              </p>
-              <div className="row center-row rise auth-cta" style={{ '--d': '560ms' } as React.CSSProperties}>
-                {user ? (
-                  <>
-                    <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
-                    <Link className="btn lg" to="/app/post">Post a trip</Link>
-                  </>
-                ) : (
-                  <>
-                    <button className="btn primary lg" onClick={signIn}>
-                      Sign in with your VIT Google account <ArrowRight size={18} aria-hidden="true" />
-                    </button>
-                    <a className="btn lg" href="#how">See how it works</a>
-                  </>
-                )}
-              </div>
-              {error && <p className="error" role="alert">{error}</p>}
-              <p className="fine rise" style={{ '--d': '680ms' } as React.CSSProperties}>A student-built project, not an official VIT service.</p>
-            </>
-          }
-          b={
-            <>
-              <p className="eyebrow">Someone is already going your way</p>
-              <h2 className="scene-h2">Find them. Ask them. Go together.</h2>
-              <figure className="example" aria-label="Example of a trip card">
-                <figcaption>Example trip</figcaption>
-                <div className="ex-card">
-                  <div className="row between">
-                    <span className="chip"><ModeIcon id="cab" /> Cab</span>
-                    <span className="chip ok">2 spots open</span>
-                  </div>
-                  <div className="ex-route">
-                    <strong>VIT Vellore</strong>
-                    <span aria-hidden="true">→</span>
-                    <strong>Chennai Airport</strong>
-                  </div>
-                  <p className="muted small">Fri, 6:00 am · Meet at main gate · Split equally</p>
-                  <div className="row">
-                    <span className="chip safe"><ShieldCheck size={14} aria-hidden="true" /> Women only</span>
-                    <span className="chip">Space for luggage</span>
-                  </div>
-                </div>
-              </figure>
-              {user
-                ? <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
-                : <a className="btn primary lg" href="#how">See how it works <ArrowRight size={18} aria-hidden="true" /></a>}
-            </>
-          }
-        />
+        <section className="hero">
+          <div className="hero-copy">
+            <p className="eyebrow rise" style={{ '--d': '0ms' } as React.CSSProperties}>{user && first ? `Welcome back, ${first}` : 'For VIT students'}</p>
+            <h1 aria-label="Don’t travel alone. Don’t overpay.">
+              <WordReveal text="Don’t travel alone." />
+              <span className="hl"><WordReveal text="Don’t overpay." />
+                <svg className="scribble" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 Q 40 1 80 7 T 160 6 T 240 8 T 298 5" /></svg>
+              </span>
+            </h1>
+            <p className="lede rise" style={{ '--d': '420ms' } as React.CSSProperties}>
+              Find students heading your way, by cab, train, flight or anything else. Split the cost, share the ride,
+              and know who you are travelling with.
+            </p>
+            <div className="row rise auth-cta" style={{ '--d': '560ms' } as React.CSSProperties}>
+              {user ? (
+                <>
+                  <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
+                  <Link className="btn lg" to="/app/post">Post a trip +</Link>
+                </>
+              ) : (
+                <>
+                  <button className="btn primary lg" onClick={signIn}>Find a trip <ArrowRight size={18} aria-hidden="true" /></button>
+                  <a className="btn lg" href="#how">How it works</a>
+                </>
+              )}
+            </div>
+            {error && <p className="error" role="alert">{error}</p>}
+            <ul className="trust rise" style={{ '--d': '680ms' } as React.CSSProperties}>
+              <li><BadgeCheck size={18} aria-hidden="true" /> Verified VIT students</li>
+              <li><Handshake size={18} aria-hidden="true" /> Hosts approve joins</li>
+              <li><ShieldCheck size={18} aria-hidden="true" /> Block and report</li>
+            </ul>
+            <p className="fine">A student-built project, not an official VIT service.</p>
+          </div>
 
-        <section className="marquees" aria-label="Every kind of trip">
-          <Marquee>
-            {MODES.map((m) => <li key={m.id}><ModeIcon id={m.id} size={18} /> {m.label}</li>)}
-          </Marquee>
-          <Marquee reverse>
-            {OCCASIONS.map((o) => <li key={o} className="alt">{o}</li>)}
-          </Marquee>
+          <div className="hero-art rise" style={{ '--d': '300ms' } as React.CSSProperties}>
+            <p className="hand note-top" aria-hidden="true">same journey,<br />better company.</p>
+            <div className="postcard"><TrainPostcard /></div>
+            <span className="tape t1" aria-hidden="true" /><span className="tape t2" aria-hidden="true" />
+            <figure className="ticket-float" aria-label="Example of a trip ticket">
+              <figcaption className="mono">Example</figcaption>
+              <p className="tf-route"><strong>VIT</strong><span aria-hidden="true">→</span><strong>Chennai</strong></p>
+              <p className="mono small">Fri · 06:40 · 2 seats</p>
+            </figure>
+            <div className="stamp" aria-hidden="true"><span>Travel Tinder</span><b>Est. 2026</b></div>
+          </div>
         </section>
 
-        <section className="band" aria-label="What it does">
-          <div className="pillars">
-            <Reveal><Coins size={22} aria-hidden="true" /><h3>Split the cost</h3><p>Share a cab or an auto and the fare per person drops.</p></Reveal>
-            <Reveal delay={120}><Route size={22} aria-hidden="true" /><h3>Go anywhere</h3><p>Not limited to a list of cities. Type any place in the world.</p></Reveal>
-            <Reveal delay={240}><Handshake size={22} aria-hidden="true" /><h3>Travel with people you can vet</h3><p>Verified students, private chat, and a host who approves each person.</p></Reveal>
+        <section className="finder-wrap" aria-label="Search trips">
+          <form className="finder" onSubmit={onFind}>
+            <label className="field"><span>From</span>
+              <input value={from} onChange={(e) => setFrom(e.target.value)} placeholder="Vellore, VIT…" /></label>
+            <label className="field"><span>To</span>
+              <input value={to} onChange={(e) => setTo(e.target.value)} placeholder="Anywhere" /></label>
+            <button className="btn primary" type="submit">Search trips <ArrowRight size={16} aria-hidden="true" /></button>
+          </form>
+          {!user && <p className="fine finder-hint">You will be asked to sign in with your VIT account first.</p>}
+        </section>
+
+        <section className="section" aria-labelledby="routes-h">
+          <Reveal><h2 id="routes-h">Routes people plan from campus</h2></Reveal>
+          <p className="muted small">Shortcuts to search by place. These are not live listings.</p>
+          <div className="routes-row">
+            {ROUTES.map((r, i) => (
+              <Reveal key={r.code} delay={i * 80}>
+                <button type="button" className={`route-card mode-${r.mode}`} onClick={() => go(r.q)}>
+                  <div className="rc-art"><ModeArt mode={r.mode} /><span className="rc-code mono">{r.code}</span></div>
+                  <strong>{r.title}</strong>
+                  <span className="muted small">{r.note} · tap to search</span>
+                </button>
+              </Reveal>
+            ))}
           </div>
+        </section>
+
+        <section className="banner-wrap">
+          <Reveal className="banner">
+            <div className="banner-art"><Travellers /></div>
+            <div className="banner-copy">
+              <h2>Good trips.<br />Great company.</h2>
+              <p>Travel with people who get it: students, with a host who approves every join.</p>
+            </div>
+            <button type="button" className="pass" onClick={() => go('')}>
+              <span className="mono">Join a trip</span>
+              <strong>Find yours</strong>
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
+          </Reveal>
         </section>
 
         <section id="how" className="section">
           <Reveal><h2>How it works</h2></Reveal>
-          <ol className="steps" ref={stepsRef}>
+          <div className="how-grid">
             {STEPS.map((s, i) => (
-              <li key={s.title} className={reached > i ? 'on' : ''}>
-                <span className="step-n">{i + 1}</span>
-                <div><h3>{s.title}</h3><p>{s.text}</p></div>
-              </li>
+              <Reveal key={s.n} delay={i * 100} className="how-card">
+                <span className="how-n">{s.n}</span>
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
+              </Reveal>
             ))}
-          </ol>
+          </div>
         </section>
 
-        <section id="safety" className="section tint">
+        <section id="safety" className="section">
           <Reveal><h2>Built around safety and privacy</h2></Reveal>
           <Reveal as="p" className="section-lede" delay={80}>
             Meeting people for a journey needs trust. These protections are enforced by the server,
@@ -177,7 +190,7 @@ export default function Landing() {
           </Reveal>
           <div className="safety-grid">
             {SAFETY.map(({ icon: Icon, title, text }, i) => (
-              <Reveal key={title} className="safety-item" delay={(i % 2) * 120}>
+              <Reveal key={title} className="note-card" delay={(i % 2) * 100}>
                 <Icon size={22} aria-hidden="true" />
                 <h3>{title}</h3>
                 <p>{text}</p>
@@ -202,8 +215,8 @@ export default function Landing() {
             <h2>Ready for your next trip?</h2>
             <p>{user ? 'Browse what is planned, or post your own.' : <>Sign in with your <code>@{CAMPUS_DOMAIN}</code> account. Setting up takes a minute.</>}</p>
             {user
-              ? <Link className="btn primary lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
-              : <button className="btn primary lg" onClick={signIn}>Sign in with Google <ArrowRight size={18} aria-hidden="true" /></button>}
+              ? <Link className="btn lg" to="/app">Find a trip <ArrowRight size={18} aria-hidden="true" /></Link>
+              : <button className="btn lg" onClick={signIn}>Sign in with Google <ArrowRight size={18} aria-hidden="true" /></button>}
           </Reveal>
         </section>
       </main>

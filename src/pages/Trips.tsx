@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { collection, limit, onSnapshot, orderBy, query, Timestamp, where } from 'firebase/firestore'
 import { Compass, Plus, Search } from 'lucide-react'
 import { db } from '../lib/firebase'
@@ -17,7 +17,8 @@ export default function Trips() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [mode, setMode] = useState<TravelMode | ''>('')
-  const [text, setText] = useState('')
+  const [params] = useSearchParams()
+  const [text, setText] = useState(params.get('q') ?? '')
   const first = prettyName(profile?.displayName).split(' ')[0]
 
   useEffect(() => {
