@@ -175,13 +175,6 @@ input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var
 .section.tint > * { max-width: 1040px; margin-inline: auto; }
 .section-lede { color: var(--muted); max-width: 60ch; margin-bottom: 28px !important; }
 
-.steps { list-style: none; margin: 24px 0 36px; padding: 0; display: grid; gap: 22px; }
-.steps li { display: flex; gap: 16px; }
-.steps p { color: var(--muted); margin: 0; max-width: 56ch; }
-.step-n { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-family: var(--head); font-weight: 700; background: var(--ink); color: var(--ink-text); }
-.modes-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
-.mode-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
-.mode-list li { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-weight: 500; }
 
 .safety-grid { display: grid; gap: 18px; }
 .safety-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
@@ -206,3 +199,86 @@ input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var
   .safety-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* ================= motion ================= */
+:root { --ease: cubic-bezier(0.2, 0.7, 0.2, 1); }
+
+/* Nav gains a hairline once the page has scrolled. */
+.site.scrolled .site-nav-wrap { border-bottom-color: var(--border); }
+
+/* Headline: words slide up out of a mask, one after another. */
+.w-mask { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.12em; margin-bottom: -0.12em; }
+.w { display: inline-block; transform: translateY(115%); animation: word-up 0.9s var(--ease) forwards; animation-delay: calc(120ms + var(--i) * 80ms); }
+@keyframes word-up { to { transform: none; } }
+
+/* Everything else in the hero rises in after the headline. */
+.rise { opacity: 0; transform: translateY(18px); animation: rise 0.8s var(--ease) forwards; animation-delay: var(--d, 0ms); }
+@keyframes rise { to { opacity: 1; transform: none; } }
+
+/* Hero parallax: wash and card drift at different speeds as you scroll. */
+.hero2::before { transform: translate3d(0, calc(var(--sy, 0) * 0.18px), 0); will-change: transform; }
+.example { transform: translate3d(0, calc(var(--sy, 0) * -0.07px), 0); }
+.ex-card { animation: float 7s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(-0.4deg); } 50% { transform: translateY(-8px) rotate(0.4deg); } }
+
+/* Marquees, like the category strip on the reference page. */
+.marquees { display: grid; gap: 12px; padding: 8px 0 28px; }
+.marquee { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.marquee-track { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+.marquee.reverse .marquee-track { animation-direction: reverse; animation-duration: 46s; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee ul { display: flex; gap: 12px; margin: 0; padding: 0 6px; list-style: none; }
+.marquee li { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; padding: 9px 18px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-weight: 500; }
+.marquee li.alt { background: transparent; font-family: var(--head); font-size: 1.15rem; letter-spacing: -0.01em; border-color: transparent; padding-inline: 10px; }
+.marquee li.alt::after { content: '↗'; margin-left: 10px; color: var(--muted); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* Scroll reveal. */
+.reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); transition-delay: var(--d, 0ms); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* Steps: a line fills as you scroll and each step lights up when reached. */
+.steps { --p: 0; position: relative; list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 40px; }
+.steps::before, .steps::after { content: ''; position: absolute; left: 16px; top: 16px; width: 2px; border-radius: 2px; }
+.steps::before { bottom: 16px; background: var(--border); }
+.steps::after { height: calc((100% - 32px) * var(--p)); background: var(--ink); }
+.steps li { position: relative; display: flex; gap: 20px; opacity: 0.4; transition: opacity 0.5s var(--ease); }
+.steps li.on { opacity: 1; }
+.steps p { color: var(--muted); margin: 0; max-width: 56ch; }
+.step-n { position: relative; z-index: 1; flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-family: var(--head); font-weight: 700; background: var(--surface); color: var(--text); border: 2px solid var(--border); transition: background 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s var(--ease), transform 0.4s var(--ease); }
+.steps li.on .step-n { background: var(--ink); color: var(--ink-text); border-color: var(--ink); transform: scale(1.08); }
+
+/* Cards and buttons feel responsive. */
+.safety-item { transition: transform 0.35s var(--ease), border-color 0.35s var(--ease), opacity 0.8s var(--ease); }
+.safety-item:hover { transform: translateY(-4px); border-color: var(--text); }
+.btn svg { transition: transform 0.25s var(--ease); }
+.btn:hover svg { transform: translateX(4px); }
+.btn { transition: transform 0.2s var(--ease), border-color 0.2s, background 0.2s; }
+.btn:active { transform: scale(0.97); }
+.faq-list details > p { animation: fade-in 0.4s var(--ease); }
+@keyframes fade-in { from { opacity: 0; transform: translateY(-4px); } }
+.cta-inner.reveal { transform: translateY(26px) scale(0.98); }
+.cta-inner.reveal.in { transform: none; }
+
+/* Inside the app: calm page changes and a gentle card lift. */
+.app-main > * { animation: page-in 0.45s var(--ease) both; }
+.trip-grid > a { animation: page-in 0.5s var(--ease) both; }
+.trip-grid > a:nth-child(2) { animation-delay: 50ms; }
+.trip-grid > a:nth-child(3) { animation-delay: 100ms; }
+.trip-grid > a:nth-child(4) { animation-delay: 150ms; }
+.trip-grid > a:nth-child(n+5) { animation-delay: 200ms; }
+a.card { transition: transform 0.25s var(--ease), border-color 0.25s; }
+a.card:hover { transform: translateY(-3px); }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } }
+
+/* Respect reduced-motion: show everything, move nothing. */
+@media (prefers-reduced-motion: reduce) {
+  .w, .rise, .reveal, .app-main > *, .trip-grid > a { animation: none; opacity: 1; transform: none; transition: none; }
+  .ex-card, .marquee-track { animation: none; }
+  .hero2::before, .example { transform: none; }
+  .marquee { -webkit-mask-image: none; mask-image: none; }
+  .marquee-track { width: auto; flex-wrap: wrap; }
+  .marquee ul { flex-wrap: wrap; }
+  .marquee .dup { display: none; }
+  .steps li { opacity: 1; }
+}

@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Compass, CirclePlus, LifeBuoy, Luggage, MessageCircle, UserRound } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 
@@ -12,6 +12,7 @@ const TABS = [
 
 export default function Layout() {
   const { profile, user } = useAuth()
+  const { pathname } = useLocation()
   return (
     <div className="app">
       <header className="app-bar">
@@ -28,7 +29,7 @@ export default function Layout() {
           <Link to="/help" className="icon-btn" aria-label="Help and safety"><LifeBuoy size={20} aria-hidden="true" /></Link>
         </span>
       </header>
-      <main className="app-main"><Outlet /></main>
+      <main className="app-main" key={pathname}><Outlet /></main>
     </div>
   )
 }

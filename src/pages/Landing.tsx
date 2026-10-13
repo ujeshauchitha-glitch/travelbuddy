@@ -1,15 +1,17 @@
+import { useRef, useState } from 'react'
 import { ArrowRight, Coins, Handshake, Lock, MessageCircle, Route, ShieldCheck, Users } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { CAMPUS_DOMAIN } from '../lib/firebase'
 import { MODES } from '../lib/modes'
+import { Reveal, WordReveal, useScrollProgress, useScrollVars } from '../lib/motion'
 import ModeIcon from '../components/ModeIcon'
 
 const STEPS = [
-  { n: '1', title: 'Post or find a trip',
+  { title: 'Post or find a trip',
     text: 'Going to the airport, the station, home for the holidays, or somewhere new? Post where and when, or browse trips already planned. Any place works, not only big cities.' },
-  { n: '2', title: 'Ask, then request to join',
+  { title: 'Ask, then request to join',
     text: 'Message the host privately to check the plan. When you are ready, send a join request. The host decides who comes along.' },
-  { n: '3', title: 'Share details, then go',
+  { title: 'Share details, then go',
     text: 'Once you are accepted, the contact details each person chose to share with travel mates unlock. Everything else stays hidden.' },
 ]
 
@@ -37,41 +39,66 @@ const FAQ = [
     a: 'Block the person, report them from the chat or the trip, and call 112 in an emergency. Reports are visible only to you and the project owner.' },
 ]
 
+const OCCASIONS = [
+  'Airport runs', 'Station drops', 'Home for the holidays', 'Weekend getaways', 'Internship commutes',
+  'Late-night arrivals', 'Hometown trips', 'Group outings', 'Anywhere else',
+]
+
+/** An endlessly scrolling row. The second copy is hidden from screen readers. */
+function Marquee({ children, reverse = false }: { children: React.ReactNode; reverse?: boolean }) {
+  return (
+    <div className={reverse ? 'marquee reverse' : 'marquee'}>
+      <div className="marquee-track">
+        <ul>{children}</ul>
+        <ul aria-hidden="true" className="dup">{children}</ul>
+      </div>
+    </div>
+  )
+}
+
 export default function Landing() {
   const { signIn, error } = useAuth()
+  const root = useRef<HTMLDivElement>(null)
+  const stepsRef = useRef<HTMLOListElement>(null)
+  const [reached, setReached] = useState(0)
+  useScrollVars(root)
+  useScrollProgress(stepsRef, STEPS.length, setReached)
+
   return (
-    <div className="site">
-      <div className="site-nav-wrap"><header className="site-nav">
-        <a href="#top" className="brand">TravelBuddy</a>
-        <nav aria-label="Page sections" className="site-links">
-          <a href="#how">How it works</a>
-          <a href="#safety">Safety</a>
-          <a href="#faq">FAQ</a>
-        </nav>
-        <button className="btn primary sm" onClick={signIn}>Sign in</button>
-      </header></div>
+    <div className="site" ref={root}>
+      <div className="site-nav-wrap">
+        <header className="site-nav">
+          <a href="#top" className="brand">TravelBuddy</a>
+          <nav aria-label="Page sections" className="site-links">
+            <a href="#how">How it works</a>
+            <a href="#safety">Safety</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+          <button className="btn primary sm" onClick={signIn}>Sign in</button>
+        </header>
+      </div>
 
       <main id="top">
         <section className="hero2">
           <div className="hero2-copy">
-            <p className="eyebrow">For VIT students</p>
-            <h1>Don&rsquo;t travel alone. Don&rsquo;t overpay.</h1>
-            <p className="lede">
+            <p className="eyebrow rise" style={{ '--d': '0ms' } as React.CSSProperties}>For VIT students</p>
+            <h1 aria-label="Don’t travel alone. Don’t overpay."><WordReveal text="Don’t travel alone. Don’t overpay." /></h1>
+            <p className="lede rise" style={{ '--d': '420ms' } as React.CSSProperties}>
               TravelBuddy helps you find other students heading the same way, by cab, train, flight,
               bus or anything else, so the ride costs less, the journey is better company, and you
               know who you are travelling with.
             </p>
-            <div className="row">
+            <div className="row rise" style={{ '--d': '560ms' } as React.CSSProperties}>
               <button className="btn primary lg" onClick={signIn}>
                 Sign in with your VIT Google account <ArrowRight size={18} aria-hidden="true" />
               </button>
               <a className="btn lg" href="#how">See how it works</a>
             </div>
             {error && <p className="error" role="alert">{error}</p>}
-            <p className="fine">A student-built project, not an official VIT service.</p>
+            <p className="fine rise" style={{ '--d': '680ms' } as React.CSSProperties}>A student-built project, not an official VIT service.</p>
           </div>
 
-          <figure className="example" aria-label="Example of a trip card">
+          <figure className="example rise" style={{ '--d': '300ms' } as React.CSSProperties} aria-label="Example of a trip card">
             <figcaption>Example trip</figcaption>
             <div className="ex-card">
               <div className="row between">
@@ -92,57 +119,69 @@ export default function Landing() {
           </figure>
         </section>
 
+        <section className="marquees" aria-label="Every kind of trip">
+          <Marquee>
+            {MODES.map((m) => <li key={m.id}><ModeIcon id={m.id} size={18} /> {m.label}</li>)}
+          </Marquee>
+          <Marquee reverse>
+            {OCCASIONS.map((o) => <li key={o} className="alt">{o}</li>)}
+          </Marquee>
+        </section>
+
         <section className="band" aria-label="What it does">
           <div className="pillars">
-            <div><Coins size={22} aria-hidden="true" /><h3>Split the cost</h3><p>Share a cab or an auto and the fare per person drops.</p></div>
-            <div><Route size={22} aria-hidden="true" /><h3>Go anywhere</h3><p>Not limited to a list of cities. Type any place in the world.</p></div>
-            <div><Handshake size={22} aria-hidden="true" /><h3>Travel with people you can vet</h3><p>Verified students, private chat, and a host who approves each person.</p></div>
+            <Reveal><Coins size={22} aria-hidden="true" /><h3>Split the cost</h3><p>Share a cab or an auto and the fare per person drops.</p></Reveal>
+            <Reveal delay={120}><Route size={22} aria-hidden="true" /><h3>Go anywhere</h3><p>Not limited to a list of cities. Type any place in the world.</p></Reveal>
+            <Reveal delay={240}><Handshake size={22} aria-hidden="true" /><h3>Travel with people you can vet</h3><p>Verified students, private chat, and a host who approves each person.</p></Reveal>
           </div>
         </section>
 
         <section id="how" className="section">
-          <h2>How it works</h2>
-          <ol className="steps">
-            {STEPS.map((s) => (
-              <li key={s.n}><span className="step-n">{s.n}</span><div><h3>{s.title}</h3><p>{s.text}</p></div></li>
+          <Reveal><h2>How it works</h2></Reveal>
+          <ol className="steps" ref={stepsRef}>
+            {STEPS.map((s, i) => (
+              <li key={s.title} className={reached > i ? 'on' : ''}>
+                <span className="step-n">{i + 1}</span>
+                <div><h3>{s.title}</h3><p>{s.text}</p></div>
+              </li>
             ))}
           </ol>
-          <p className="modes-label">Works for every kind of trip</p>
-          <ul className="mode-list">
-            {MODES.map((m) => <li key={m.id}><ModeIcon id={m.id} size={18} /> {m.label}</li>)}
-          </ul>
         </section>
 
         <section id="safety" className="section tint">
-          <h2>Built around safety and privacy</h2>
-          <p className="section-lede">
+          <Reveal><h2>Built around safety and privacy</h2></Reveal>
+          <Reveal as="p" className="section-lede" delay={80}>
             Meeting people for a journey needs trust. These protections are enforced by the server,
             so they cannot be switched off by editing the page.
-          </p>
+          </Reveal>
           <div className="safety-grid">
-            {SAFETY.map(({ icon: Icon, title, text }) => (
-              <div key={title} className="safety-item">
+            {SAFETY.map(({ icon: Icon, title, text }, i) => (
+              <Reveal key={title} className="safety-item" delay={(i % 2) * 120}>
                 <Icon size={22} aria-hidden="true" />
                 <h3>{title}</h3>
                 <p>{text}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section id="faq" className="section">
-          <h2>Questions</h2>
+          <Reveal><h2>Questions</h2></Reveal>
           <div className="faq-list">
-            {FAQ.map((f) => (
-              <details key={f.q}><summary>{f.q}</summary><p>{f.a}</p></details>
+            {FAQ.map((f, i) => (
+              <Reveal key={f.q} delay={i * 60}>
+                <details><summary>{f.q}</summary><p>{f.a}</p></details>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section className="cta">
-          <h2>Ready for your next trip?</h2>
-          <p>Sign in with your <code>@{CAMPUS_DOMAIN}</code> account. Setting up takes a minute.</p>
-          <button className="btn primary lg" onClick={signIn}>Sign in with Google</button>
+          <Reveal className="cta-inner">
+            <h2>Ready for your next trip?</h2>
+            <p>Sign in with your <code>@{CAMPUS_DOMAIN}</code> account. Setting up takes a minute.</p>
+            <button className="btn primary lg" onClick={signIn}>Sign in with Google <ArrowRight size={18} aria-hidden="true" /></button>
+          </Reveal>
         </section>
       </main>
 
