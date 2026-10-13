@@ -29,6 +29,7 @@ export default function Select<T extends string>({
 }: Props<T>) {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
+  const [up, setUp] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const button = useRef<HTMLButtonElement>(null)
   const list = useRef<HTMLUListElement>(null)
@@ -55,6 +56,14 @@ export default function Select<T extends string>({
   }, [active, open])
 
   const openList = () => {
+    // Open upward when the list would run under the bottom edge or the phone tab bar.
+    const r = button.current?.getBoundingClientRect()
+    if (r) {
+      const reserved = window.matchMedia('(max-width: 759px)').matches ? 100 : 16
+      const below = window.innerHeight - r.bottom - reserved
+      const wanted = Math.min(280, options.length * 52 + 16)
+      setUp(below < wanted && r.top > below)
+    }
     const i = options.findIndex((o) => o.value === value && !o.disabled)
     setActive(i >= 0 ? i : options.findIndex((o) => !o.disabled))
     setOpen(true)
@@ -125,7 +134,7 @@ export default function Select<T extends string>({
         <ChevronDown size={18} aria-hidden="true" />
       </button>
       {open && (
-        <ul className="select-list" role="listbox" id={`${uid}-list`} ref={list} aria-label={ariaLabel}>
+        <ul className={up ? 'select-list up' : 'select-list'} role="listbox" id={`${uid}-list`} ref={list} aria-label={ariaLabel}>
           {options.map((o, i) => (
             <li
               key={o.value}

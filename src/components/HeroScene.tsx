@@ -91,22 +91,21 @@ export default function HeroScene({ a, b }: { a: ReactNode; b: ReactNode }) {
         <div className="scene-art" aria-hidden="true">
           <div className="sky" />
           <svg className="scene-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice">
-            <defs>
-              <radialGradient id="sunGlow">
-                <stop offset="0" stopColor="var(--sun)" stopOpacity="1" />
-                <stop offset="0.35" stopColor="var(--sun)" stopOpacity="0.55" />
-                <stop offset="1" stopColor="var(--sun)" stopOpacity="0" />
-              </radialGradient>
-            </defs>
+            <rect x="0" y="0" width="1440" height="900" fill="var(--sky-1)" />
+            <rect x="0" y="470" width="1440" height="430" fill="var(--sky-2)" />
+            <rect x="0" y="590" width="1440" height="310" fill="var(--sky-3)" />
 
             <g className="l-stars">
               {stars.map((s, i) => <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#fff" />)}
             </g>
 
             <g className="l-sun">
-              <circle cx="720" cy="650" r="320" fill="url(#sunGlow)" />
-              <circle cx="720" cy="650" r="86" fill="var(--sun)" />
+              <circle cx="720" cy="640" r="132" fill="var(--sun-ring)" />
+              <circle cx="720" cy="640" r="90" fill="var(--sun)" className="outline" />
             </g>
+
+            <g className="cloud c1"><g transform="translate(0 70) scale(1.3)"><path fill="var(--cloud)" d="M0 60 Q0 40 22 40 Q26 12 56 14 Q78 -4 100 18 Q132 14 134 42 Q150 44 150 60 Z" /></g></g>
+            <g className="cloud c2"><g transform="translate(0 150) scale(0.9)"><path fill="var(--cloud)" d="M0 60 Q0 40 22 40 Q26 12 56 14 Q78 -4 100 18 Q132 14 134 42 Q150 44 150 60 Z" /></g></g>
 
             {/* plane: a dashed trail that draws itself, and the plane at its tip */}
             <path d={PLANE_D} className="plane-trail" pathLength="1" />
@@ -114,10 +113,10 @@ export default function HeroScene({ a, b }: { a: ReactNode; b: ReactNode }) {
               <path d="M-16 0 L8 -3 L18 0 L8 3 Z M-3 -2 L-12 -13 L-7 -13 L5 -2 Z M-3 2 L-12 13 L-7 13 L5 2 Z M-14 0 L-18 -6 L-14 -6 L-10 0 Z" />
             </g>
 
-            <g className="l-far"><path d="M0 560 L120 470 L220 540 L360 400 L480 520 L620 430 L760 540 L900 410 L1040 520 L1180 440 L1320 530 L1440 470 L1440 900 L0 900 Z" fill="var(--hill-1)" /></g>
-            <g className="l-mid"><path d="M0 640 C 200 560 360 600 520 650 C 700 700 860 560 1040 590 C 1220 620 1340 600 1440 570 L1440 900 L0 900 Z" fill="var(--hill-2)" /></g>
+            <g className="l-far"><path d="M0 560 L120 470 L220 540 L360 400 L480 520 L620 430 L760 540 L900 410 L1040 520 L1180 440 L1320 530 L1440 470 L1440 900 L0 900 Z" className="hill" fill="var(--hill-1)" /></g>
+            <g className="l-mid"><path d="M0 640 C 200 560 360 600 520 650 C 700 700 860 560 1040 590 C 1220 620 1340 600 1440 570 L1440 900 L0 900 Z" className="hill" fill="var(--hill-2)" /></g>
             <g className="l-near">
-              <path d="M0 700 C 260 650 520 690 760 700 C 1000 710 1180 660 1440 690 L1440 900 L0 900 Z" fill="var(--hill-3)" />
+              <path d="M0 700 C 260 650 520 690 760 700 C 1000 710 1180 660 1440 690 L1440 900 L0 900 Z" className="hill" fill="var(--hill-3)" />
               <path ref={road} d={ROAD} className="road" />
               <path d={ROAD} className="road-dash" />
               <g ref={cab} className="cab">
