@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import {
   assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing'
-import { doc, getDoc, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore'
+import { deleteDoc, doc, getDoc, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore'
 
 let env: RulesTestEnvironment
 
@@ -163,5 +163,27 @@ describe('issues and reports', () => {
     await assertSucceeds(getDoc(doc(ctx('alice'), 'issues', 'i1')))
     await assertFails(getDoc(doc(ctx('bob'), 'issues', 'i1')))
     await assertFails(setDoc(doc(ctx('bob'), 'issues', 'i2'), { ...issue, authorId: 'alice' }))
+  })
+})
+
+describe('deleting a trip', () => {
+  beforeEach(async () => {
+    await seedUser('alice', 'woman')
+    await seedUser('bob', 'man')
+    await assertSucceeds(setDoc(doc(ctx('alice'), 'trips', 't1'), trip('alice', 'anyone')))
+  })
+
+  it('lets the host delete their own trip', async () => {
+    await assertSucceeds(deleteDoc(doc(ctx('alice'), 'trips', 't1')))
+  })
+
+  it('does not let anyone else delete it', async () => {
+    await assertFails(deleteDoc(doc(ctx('bob'), 'trips', 't1')))
+    await assertFails(deleteDoc(doc(ctx('eve', 'eve@gmail.com'), 'trips', 't1')))
+  })
+
+  it('lets the host delete a trip that already has join requests', async () => {
+    await assertSucceeds(setDoc(doc(ctx('bob'), 'trips', 't1', 'requests', 'bob'), { status: 'pending' }))
+    await assertSucceeds(deleteDoc(doc(ctx('alice'), 'trips', 't1')))
   })
 })

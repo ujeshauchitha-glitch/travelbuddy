@@ -11,6 +11,7 @@ import type { ContactField, JoinRequest, Trip } from '../lib/types'
 import { fmtWhen } from '../components/TripCard'
 import ModeIcon from '../components/ModeIcon'
 import RouteVisual from '../components/RouteVisual'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { initials, prettyName } from '../lib/names'
 
 // Reads one field. The server decides whether we are allowed.
@@ -50,6 +51,8 @@ export default function TripDetail() {
   const [requests, setRequests] = useState<JoinRequest[]>([])
   const [mine, setMine] = useState<JoinRequest | null>(null)
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const hostId = trip?.hostId
   const isHost = !!hostId && hostId === user?.uid
@@ -81,7 +84,11 @@ export default function TripDetail() {
 
   const run = async (fn: () => Promise<void>) => {
     setError('')
-    try { await fn() } catch { setError('That did not work. Please try again.') }
+    try { await fn() } catch (e) {
+      console.error(e)
+      const code = (e as { code?: string }).code
+      setError(`That did not work${code ? ` (${code.replace('permission-denied', 'not allowed')})` : ''}. Please try again.`)
+    }
   }
 
   const requestJoin = () => run(() =>
@@ -105,11 +112,21 @@ export default function TripDetail() {
     }
   })
 
-  const remove = () => run(async () => {
-    if (!confirm('Delete this trip?')) return
-    await deleteDoc(doc(db, 'trips', trip.id))
-    nav('/app')
-  })
+  const doDelete = async () => {
+    setDeleting(true)
+    setError('')
+    try {
+      await deleteDoc(doc(db, 'trips', trip.id))
+      nav('/app')
+    } catch (e) {
+      console.error(e)
+      const code = (e as { code?: string }).code
+      setConfirmDelete(false)
+      setError(`Could not delete this trip${code ? ` (${code})` : ''}. Please try again.`)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const chatLink = (otherUid: string) => `/app/chat/${convId(user!.uid, otherUid)}?trip=${trip.id}`
 
@@ -158,7 +175,17 @@ export default function TripDetail() {
               {r.status === 'accepted' && <Contacts uid={r.uid} name={prettyName(r.displayName)} />}
             </div>
           ))}
-          <button className="btn danger" onClick={remove}>Delete trip</button>
+          <button className="btn danger" onClick={() => setConfirmDelete(true)}>Delete trip</button>
+          <ConfirmDialog
+            open={confirmDelete}
+            danger
+            busy={deleting}
+            title="Delete this trip?"
+            message="It will be removed for everyone, including anyone who asked to join. This cannot be undone."
+            confirmLabel="Delete trip"
+            onConfirm={doDelete}
+            onCancel={() => setConfirmDelete(false)}
+          />
         </>
       ) : isMember ? (
         <>

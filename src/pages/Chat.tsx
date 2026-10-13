@@ -7,6 +7,7 @@ import { db } from '../lib/firebase'
 import { useAuth } from '../auth/AuthContext'
 import type { Message } from '../lib/types'
 import { prettyName } from '../lib/names'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function Chat() {
   const { cid } = useParams()
@@ -24,6 +25,7 @@ export default function Chat() {
   const [blocked, setBlocked] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [confirmBlock, setConfirmBlock] = useState(false)
   const bottom = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -77,7 +79,17 @@ export default function Chat() {
   const toggleBlock = async () => {
     const ref = doc(db, 'profiles', me, 'blocked', other)
     if (blocked) await deleteDoc(ref)
-    else if (confirm(`Block ${otherName}? They will not be able to message you.`)) await setDoc(ref, { createdAt: serverTimestamp() })
+    else setConfirmBlock(true)
+  }
+
+  const doBlock = async () => {
+    try {
+      await setDoc(doc(db, 'profiles', me, 'blocked', other), { createdAt: serverTimestamp() })
+    } catch (e) {
+      console.error(e)
+      setError('Could not block this person. Please try again.')
+    }
+    setConfirmBlock(false)
   }
 
   return (
@@ -103,6 +115,15 @@ export default function Chat() {
         </form>
       )}
       {error && <p className="error" role="alert">{error}</p>}
+      <ConfirmDialog
+        open={confirmBlock}
+        danger
+        title={`Block ${otherName}?`}
+        message="They will no longer be able to message you. You can unblock them any time."
+        confirmLabel="Block"
+        onConfirm={doBlock}
+        onCancel={() => setConfirmBlock(false)}
+      />
     </div>
   )
 }
