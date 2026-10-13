@@ -25,7 +25,7 @@ export default function About() {
           <p className="eyebrow">About</p>
           <h1>Travel together, on purpose.</h1>
           <p className="lede">
-            TravelBuddy is a student-built way for VIT students to find each other for the same journey,
+            Travel Tinder is a student-built way for VIT students to find each other for the same journey,
             so rides cost less, travel feels safer, and nobody has to go alone.
           </p>
         </Reveal>
@@ -34,7 +34,7 @@ export default function About() {
           <h2>What it is</h2>
           <p>
             Many students make the same trip at the same time: the airport, the station, home for the
-            holidays. TravelBuddy lets you post a trip, or join one, by cab, train, flight, bus or any
+            holidays. Travel Tinder lets you post a trip, or join one, by cab, train, flight, bus or any
             other way, to any place. The host approves who joins, and you can ask questions in a private
             chat before you decide.
           </p>

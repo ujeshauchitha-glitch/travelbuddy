@@ -23,7 +23,7 @@ const FAQ: { q: string; a: string }[] = [
   { q: 'Can someone message me out of nowhere?',
     a: 'Chats can only start from a trip, between the host and someone interested in it. You can block anyone from inside the chat, and blocked people can no longer message you.' },
   { q: 'Is this an official VIT service?',
-    a: 'No. TravelBuddy is a student-built project. Sign-in is limited to @vitstudent.ac.in Google accounts so you only meet fellow students.' },
+    a: 'No. Travel Tinder is a student-built project. Sign-in is limited to @vitstudent.ac.in Google accounts so you only meet fellow students.' },
   { q: 'Who reads my reports?',
     a: 'Reports go to the project owner and are visible only to you and them. If you are in danger, call the emergency numbers above first.' },
 ]
@@ -66,7 +66,7 @@ export default function Help() {
   return (
     <>
       <h2>Help &amp; safety</h2>
-      <p className="muted small"><Link to="/about">About TravelBuddy and how your data is handled</Link></p>
+      <p className="muted small"><Link to="/about">About Travel Tinder and how your data is handled</Link></p>
 
       <div className="card sos">
         <strong>In danger or an emergency?</strong>

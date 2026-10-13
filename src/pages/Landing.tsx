@@ -31,9 +31,9 @@ const SAFETY = [
 
 const FAQ = [
   { q: 'Is this an official VIT service?',
-    a: 'No. TravelBuddy is a student-built project and is not affiliated with or endorsed by VIT. That is why it only asks for a Google sign-in, nothing else.' },
+    a: 'No. Travel Tinder is a student-built project and is not affiliated with or endorsed by VIT. That is why it only asks for a Google sign-in, nothing else.' },
   { q: 'What does it cost?',
-    a: 'Nothing. TravelBuddy never handles money. Fares are split between travellers directly, the way you agree in the trip.' },
+    a: 'Nothing. Travel Tinder never handles money. Fares are split between travellers directly, the way you agree in the trip.' },
   { q: 'Who can see my phone number?',
     a: 'Only who you choose. The default is travel mates only: people whose trip you hosted or joined. You can change it, per detail, any time.' },
   { q: 'Do I have to share my Instagram?',

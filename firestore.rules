@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// TravelBuddy security rules.
+// Travel Tinder security rules.
 // Privacy and safety are enforced HERE (server side), never only in the UI.
 service cloud.firestore {
   match /databases/{database}/documents {

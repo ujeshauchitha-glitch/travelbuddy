@@ -18,7 +18,7 @@ export default function Layout() {
   return (
     <div className="app">
       <header className="app-bar">
-        <Link to="/" className="brand">TravelBuddy</Link>
+        <Link to="/" className="brand">Travel Tinder</Link>
         <nav className="app-nav" aria-label="Main">
           {TABS.map(({ to, label, Icon, end }) => (
             <NavLink key={to} to={to} end={end}>

@@ -42,7 +42,7 @@ export function SiteNav() {
   return (
     <div className="site-nav-wrap">
       <header className="site-nav" ref={root}>
-        <Link to="/" className="brand">TravelBuddy</Link>
+        <Link to="/" className="brand">Travel Tinder</Link>
         <nav aria-label="Page sections" className="site-links">
           {LINKS.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
         </nav>
@@ -77,7 +77,7 @@ export function SiteNav() {
 export function SiteFooter() {
   return (
     <footer className="site-foot">
-      <span>TravelBuddy is a student project. Not affiliated with or endorsed by VIT.</span>
+      <span>Travel Tinder is a student project. Not affiliated with or endorsed by VIT.</span>
       <span className="foot-links">
         <Link to="/about">About</Link>
         <span>In an emergency in India, call <a href="tel:112">112</a>.</span>
